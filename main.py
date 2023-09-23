@@ -38,7 +38,7 @@ class MainApp(ctk.CTk):
         self.menu_bar.add_cascade(label="Отчёты", menu=reports_menu)
         
         help_menu = tk.Menu(self.menu_bar, tearoff=0)
-        help_menu.add_command(label="Cправка")
+        help_menu.add_command(label="Руководство пользователя")
         help_menu.add_command(label="О программе")
         self.menu_bar.add_cascade(label="Сервис", menu=help_menu)
 
@@ -52,6 +52,10 @@ class MainApp(ctk.CTk):
         
         self.table_frame = ctk.CTkFrame(self)
         self.table_frame.pack(fill='both', expand=True)
+
+        bg = tk.PhotoImage(file="res\\bg.png")
+        self.lbl = ctk.CTkLabel(self.table_frame, image=bg, text='Студенческий отдел кадров', font=("Calibri", 40))
+        self.lbl.pack(anchor='center', expand=1)
         
     def show_students_table(self):
         # Очищаем предыдущие виджеты (если есть)
