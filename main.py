@@ -15,24 +15,22 @@ class MainApp(ctk.CTk):
 
         # Создаем пункты меню
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
-        file_menu.add_command(label="Открыть")
         file_menu.add_command(label="Сохранить")
-        file_menu.add_separator()
         file_menu.add_command(label="Выход", command=self.quit)
         self.menu_bar.add_cascade(label="Файл", menu=file_menu)
 
         references_menu = tk.Menu(self.menu_bar, tearoff=0)
-        references_menu.add_command(label="Пол")
-        references_menu.add_command(label="Курс")
-        references_menu.add_command(label="Группа")
-        references_menu.add_command(label="Специальность")
-        references_menu.add_command(label="Отделение")
-        references_menu.add_command(label="Вид финансирования")
+        references_menu.add_command(label="Пол", command=lambda: self.show_tabl("SELECT * FROM pol"))
+        references_menu.add_command(label="Курс", command=lambda: self.show_tabl("SELECT * FROM kurs"))
+        references_menu.add_command(label="Группа", command=lambda: self.show_tabl("SELECT * FROM gruop"))
+        references_menu.add_command(label="Специальность", command=lambda: self.show_tabl("SELECT * FROM spec"))
+        references_menu.add_command(label="Отделение", command=lambda: self.show_tabl("SELECT * FROM otdelenie"))
+        references_menu.add_command(label="Вид финансирования", command=lambda: self.show_tabl("SELECT * FROM vid_finan"))
         self.menu_bar.add_cascade(label="Справочники", menu=references_menu)
 
         tables_menu = tk.Menu(self.menu_bar, tearoff=0)
-        tables_menu.add_command(label="Студенты", command=self.show_students_table)
-        tables_menu.add_command(label="Родители", command=self.shoq_parents_table)
+        tables_menu.add_command(label="Студенты", command=lambda: self.show_tabl("SELECT * FROM students"))
+        tables_menu.add_command(label="Родители", command=lambda: self.show_tabl("SELECT * FROM parents"))
         self.menu_bar.add_cascade(label="Таблицы", menu=tables_menu)
 
         reports_menu = tk.Menu(self.menu_bar, tearoff=0)
@@ -89,13 +87,7 @@ class MainApp(ctk.CTk):
         for row in table_data:
             tree.insert("", "end", values=row)
 
-        tree.pack()
-        
-    def show_students_table(self):
-        self.show_tabl("SELECT * FROM students")
-    
-    def shoq_parents_table(self):
-        self.show_tabl("SELECT * FROM parents")
+        tree.pack(anchor="nw")
 
 if __name__ == "__main__":
     MainApp().mainloop()
