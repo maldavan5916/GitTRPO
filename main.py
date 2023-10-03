@@ -44,8 +44,21 @@ class MainApp(ctk.CTk):
 
         # Меню "Таблицы"
         tables_menu = tk.Menu(self.menu_bar, tearoff=0)
-        tables_menu.add_command(label="Студенты", command=lambda: self.show_table("SELECT * FROM students"))
-        tables_menu.add_command(label="Родители", command=lambda: self.show_table("SELECT * FROM parents"))
+        tables_menu.add_command(label="Студенты", command=lambda: self.show_table('''
+                    SELECT students.id_student, students.FIO, students.date_dr, students.phone_nomber,
+                        kurs.N_kurs, gruop.name_gruop, otdelenie.name_otdelenie, pol.name_pol,
+                        vid_finan.name_finan, spec.name_spec
+                    FROM students
+                    JOIN kurs ON students.id_kurs = kurs.id_kurs
+                    JOIN gruop ON students.id_gruop = gruop.id_gruop
+                    JOIN otdelenie ON students.id_otdelenie = otdelenie.id_otdelenie
+                    JOIN pol ON students.id_pol = pol.id_pol
+                    JOIN vid_finan ON students.id_finan = vid_finan.id_finan
+                    JOIN spec ON students.id_spec = spec.id_spec
+        '''))
+        tables_menu.add_command(label="Родители", command=lambda: self.show_table('''
+                    SELECT * FROM parents
+        '''))
         self.menu_bar.add_cascade(label="Таблицы", menu=tables_menu)
 
         # Меню "Отчёты"
