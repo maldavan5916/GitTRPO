@@ -11,13 +11,14 @@ class MainApp(ctk.CTk):
         self.title('Студенческий отдел кадров')
         self.geometry('865x450')
         self.resizable(width=False, height=False)
+        self.last_sql_query = None
 
         # Создание фрейма для отображения таблицы
         self.table_frame = ctk.CTkFrame(self, width=700, height=400)
         self.table_frame.grid(row=0, column=0, padx=5, pady=5)
 
         # Загрузка фона
-        bg = ctk.CTkImage(Image.open("res\\images\\bg2.png"), size=(700, 400))
+        bg = ctk.CTkImage(Image.open("res\\images\\bg.png"), size=(700, 400))
         lbl = ctk.CTkLabel(self.table_frame, image=bg, text='Таблица не открыта', font=("Calibri", 40))
         lbl.place(relwidth=1, relheight=1)
 
@@ -55,6 +56,7 @@ class MainApp(ctk.CTk):
         # Меню "Сервис"
         help_menu = tk.Menu(self.menu_bar, tearoff=0)
         help_menu.add_command(label="Руководство пользователя")
+        help_menu.add_command(label="Параметры")
         help_menu.add_command(label="O программе")
         self.menu_bar.add_cascade(label="Сервис", menu=help_menu)
 
@@ -104,6 +106,7 @@ class MainApp(ctk.CTk):
 
         # Закрытие соединения с базой данных
         conn.close()
+        self.last_sql_query = sql_query
             
         canvas = ctk.CTkCanvas(self.table_frame, width=865, height=480)
         canvas.pack(fill="both", expand=True)
