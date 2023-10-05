@@ -11,7 +11,6 @@ class MainApp(ctk.CTk):
         self.title('Студенческий отдел кадров')
         self.geometry('865x450')
         self.resizable(width=False, height=False)
-        self.last_sql_query = None
 
         # Создание фрейма для отображения таблицы
         self.table_frame = ctk.CTkFrame(self, width=700, height=400)
@@ -27,8 +26,6 @@ class MainApp(ctk.CTk):
 
         # Меню "Файл"
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
-        file_menu.add_command(label="Сохранить")
-        file_menu.add_separator()
         file_menu.add_command(label="Выход", command=self.quit)
         self.menu_bar.add_cascade(label="Файл", menu=file_menu)
 
@@ -45,8 +42,8 @@ class MainApp(ctk.CTk):
         # Меню "Таблицы"
         tables_menu = tk.Menu(self.menu_bar, tearoff=0)
         tables_menu.add_command(label="Студенты", command=lambda: self.show_table('''
-                    SELECT students.id_student, students.FIO, students.date_dr, students.phone_nomber,
-                        kurs.N_kurs, gruop.name_gruop, otdelenie.name_otdelenie, pol.name_pol,
+                    SELECT students.id_student, students.FIO, students.date_dr, students.phone_nomber, students.n_bilet,
+                        students.y_post, students.y_okon, kurs.N_kurs, gruop.name_gruop, otdelenie.name_otdelenie, pol.name_pol,
                         vid_finan.name_finan, spec.name_spec
                     FROM students
                     JOIN kurs ON students.id_kurs = kurs.id_kurs
@@ -57,7 +54,8 @@ class MainApp(ctk.CTk):
                     JOIN spec ON students.id_spec = spec.id_spec
         '''))
         tables_menu.add_command(label="Родители", command=lambda: self.show_table('''
-                    SELECT * FROM parents
+                    SELECT parents.id_parent, parents.FIO, parents.phone_nomber, students.FIO FROM parents
+                    JOIN students ON parents.id_student = students.id_student
         '''))
         self.menu_bar.add_cascade(label="Таблицы", menu=tables_menu)
 
@@ -69,7 +67,6 @@ class MainApp(ctk.CTk):
         # Меню "Сервис"
         help_menu = tk.Menu(self.menu_bar, tearoff=0)
         help_menu.add_command(label="Руководство пользователя")
-        help_menu.add_command(label="Параметры")
         help_menu.add_command(label="O программе")
         self.menu_bar.add_cascade(label="Сервис", menu=help_menu)
 
@@ -119,7 +116,6 @@ class MainApp(ctk.CTk):
 
         # Закрытие соединения с базой данных
         conn.close()
-        self.last_sql_query = sql_query
             
         canvas = ctk.CTkCanvas(self.table_frame, width=865, height=480)
         canvas.pack(fill="both", expand=True)
