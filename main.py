@@ -4,6 +4,18 @@ import customtkinter as ctk
 import sqlite3
 from PIL import Image
 
+POL_HEADERS = ["ID", "Наименование"]
+KURS_HEADERS = ["ID", "Наименование"]
+GRUOP_HEADERS = ["ID", "Наименование"]
+SPEC_HEADERS = ["ID", "Наименование"]
+OTDELENIE_HEADERS = ["ID", "Наименование"]
+VID_FINAIN_HEADERS = ["ID", "Наименование"]
+
+STUDENTS_HEADERS = ["ID", "ФИО студента", "Дата рождения", "№ телефона", 
+                    "Год поступления", "Год окончания", "№ студенчиского билета",
+                    "Kypc", "Группа", "Отделение", "Пол", "Вид финансирования", "Специальность"]
+PARENTS_HEADERS = ["ID", "ФИО родителя", "№ телефона", "ФИО студента"]
+
 class MainApp(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -31,12 +43,18 @@ class MainApp(ctk.CTk):
 
         # Меню "Справочники"
         references_menu = tk.Menu(self.menu_bar, tearoff=0)
-        references_menu.add_command(label="Пол", command=lambda: self.show_table("SELECT * FROM pol"))
-        references_menu.add_command(label="Kypc", command=lambda: self.show_table("SELECT * FROM kurs"))
-        references_menu.add_command(label="Группа", command=lambda: self.show_table("SELECT * FROM gruop"))
-        references_menu.add_command(label="Специальность", command=lambda: self.show_table("SELECT * FROM spec"))
-        references_menu.add_command(label="Отделение", command=lambda: self.show_table("SELECT * FROM otdelenie"))
-        references_menu.add_command(label="Вид финансирования", command=lambda: self.show_table("SELECT * FROM vid_finan"))
+        references_menu.add_command(label="Пол", 
+                                    command=lambda: self.show_table("SELECT * FROM pol", POL_HEADERS))
+        references_menu.add_command(label="Kypc", 
+                                    command=lambda: self.show_table("SELECT * FROM kurs", KURS_HEADERS))
+        references_menu.add_command(label="Группа", 
+                                    command=lambda: self.show_table("SELECT * FROM gruop", GRUOP_HEADERS))
+        references_menu.add_command(label="Специальность", 
+                                    command=lambda: self.show_table("SELECT * FROM spec", SPEC_HEADERS))
+        references_menu.add_command(label="Отделение", 
+                                    command=lambda: self.show_table("SELECT * FROM otdelenie", OTDELENIE_HEADERS))
+        references_menu.add_command(label="Вид финансирования", 
+                                    command=lambda: self.show_table("SELECT * FROM vid_finan", VID_FINAIN_HEADERS))
         self.menu_bar.add_cascade(label="Справочники", menu=references_menu)
 
         # Меню "Таблицы"
@@ -52,11 +70,11 @@ class MainApp(ctk.CTk):
                     JOIN pol ON students.id_pol = pol.id_pol
                     JOIN vid_finan ON students.id_finan = vid_finan.id_finan
                     JOIN spec ON students.id_spec = spec.id_spec
-        '''))
+        ''', STUDENTS_HEADERS))
         tables_menu.add_command(label="Родители", command=lambda: self.show_table('''
                     SELECT parents.id_parent, parents.FIO, parents.phone_nomber, students.FIO FROM parents
                     JOIN students ON parents.id_student = students.id_student
-        '''))
+        ''', PARENTS_HEADERS))
         self.menu_bar.add_cascade(label="Таблицы", menu=tables_menu)
 
         # Меню "Отчёты"
@@ -86,11 +104,9 @@ class MainApp(ctk.CTk):
         # Создание кнопок и виджетов для поиска и редактирования данных
         btn_frame = ctk.CTkFrame(self)
         btn_frame.grid(row=0, column=1)
-        ctk.CTkButton(btn_frame, text="добавить", width=btn_width).pack(pady=pad)
-        ctk.CTkButton(btn_frame, text="удалить", width=btn_width).pack(pady=pad)
-        ctk.CTkButton(btn_frame, text="изменить", width=btn_width).pack(pady=pad)
-        ctk.CTkButton(btn_frame, text="сохранить", width=btn_width).pack(pady=pad)
-        ctk.CTkButton(btn_frame, text="отмена", width=btn_width).pack(pady=pad)
+        ctk.CTkButton(btn_frame, text="добавить", width=btn_width, command=self.add).pack(pady=pad)
+        ctk.CTkButton(btn_frame, text="удалить", width=btn_width, command=self.delete).pack(pady=pad)
+        ctk.CTkButton(btn_frame, text="изменить", width=btn_width, command=self.change).pack(pady=pad)
 
         search_frame = ctk.CTkFrame(self)
         search_frame.grid(row=1, column=0)
@@ -99,7 +115,16 @@ class MainApp(ctk.CTk):
         ctk.CTkButton(search_frame, text="Поиск", width=20).grid(row=0, column=1, padx=pad)
         ctk.CTkButton(search_frame, text="настроить поиск").grid(row=0, column=2, padx=pad)
     
-    def show_table(self, sql_query):
+    def add(self):
+        pass
+
+    def delete(self):
+        pass
+
+    def change(self):
+        pass
+    
+    def show_table(self, sql_query, headers = None):
         # Очистка фрейма перед отображением новых данных
         for widget in self.table_frame.winfo_children(): widget.destroy()
 
@@ -111,7 +136,10 @@ class MainApp(ctk.CTk):
         cursor.execute(sql_query)
 
         # Получение заголовков таблицы и данных
-        table_headers = [description[0] for description in cursor.description]
+        if headers == None: # если заголовки не были переданы используем те что в БД
+            table_headers = [description[0] for description in cursor.description]
+        else: # иначе используем те что передали
+            table_headers = headers
         table_data = cursor.fetchall()
 
         # Закрытие соединения с базой данных
