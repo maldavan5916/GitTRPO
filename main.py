@@ -3,26 +3,28 @@ from tkinter import ttk
 import customtkinter as ctk
 import sqlite3
 from PIL import Image
+from DB import DB
 
-POL_HEADERS = ["ID", "Наименование"]
-KURS_HEADERS = ["ID", "Наименование"]
-GRUOP_HEADERS = ["ID", "Наименование"]
-SPEC_HEADERS = ["ID", "Наименование"]
-OTDELENIE_HEADERS = ["ID", "Наименование"]
-VID_FINAIN_HEADERS = ["ID", "Наименование"]
+POL_HEADERS = ["ID", "Наименование пола"]
+KURS_HEADERS = ["ID", "Наименование курса"]
+GRUOP_HEADERS = ["ID", "Наименование группы"]
+SPEC_HEADERS = ["ID", "Наименование специальности"]
+OTDELENIE_HEADERS = ["ID", "Наименование отделения"]
+VID_FINAN_HEADERS = ["ID", "Наименование финансирования"]
 
 STUDENTS_HEADERS = ["ID", "ФИО студента", "Дата рождения", "№ телефона", 
-                    "Год поступления", "Год окончания", "№ студенчиского билета",
+                    "№ студенчиского билета", "Год поступления", "Год окончания",
                     "Kypc", "Группа", "Отделение", "Пол", "Вид финансирования", "Специальность"]
 PARENTS_HEADERS = ["ID", "ФИО родителя", "№ телефона", "ФИО студента"]
 
-class MainApp(ctk.CTk):
+class WindowMain(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         self.title('Студенческий отдел кадров')
         self.geometry('865x450')
         self.resizable(width=False, height=False)
+        self.last_headers = None
 
         # Создание фрейма для отображения таблицы
         self.table_frame = ctk.CTkFrame(self, width=700, height=400)
@@ -54,7 +56,7 @@ class MainApp(ctk.CTk):
         references_menu.add_command(label="Отделение", 
                                     command=lambda: self.show_table("SELECT * FROM otdelenie", OTDELENIE_HEADERS))
         references_menu.add_command(label="Вид финансирования", 
-                                    command=lambda: self.show_table("SELECT * FROM vid_finan", VID_FINAIN_HEADERS))
+                                    command=lambda: self.show_table("SELECT * FROM vid_finan", VID_FINAN_HEADERS))
         self.menu_bar.add_cascade(label="Справочники", menu=references_menu)
 
         # Меню "Таблицы"
@@ -116,13 +118,67 @@ class MainApp(ctk.CTk):
         ctk.CTkButton(search_frame, text="настроить поиск").grid(row=0, column=2, padx=pad)
     
     def add(self):
-        pass
+        if self.last_headers == POL_HEADERS:
+            WindowPol("add")
+        elif self.last_headers == KURS_HEADERS:
+            WindowKurs("add")
+        elif self.last_headers == GRUOP_HEADERS:
+            WindowGruop("add")
+        elif self.last_headers == SPEC_HEADERS:
+            WindowSpec("add")
+        elif self.last_headers == OTDELENIE_HEADERS:
+            WindowOtdelenie("add")
+        elif self.last_headers == VID_FINAN_HEADERS:
+            WindowVidFinan("add")
+        elif self.last_headers == STUDENTS_HEADERS:
+            WindowStudents("add")
+        elif self.last_headers == PARENTS_HEADERS:
+            WindowParents("add")
+        else: return
+
+        self.withdraw()
 
     def delete(self):
-        pass
+        if self.last_headers == POL_HEADERS:
+            WindowPol("delete")
+        elif self.last_headers == KURS_HEADERS:
+            WindowKurs("delete")
+        elif self.last_headers == GRUOP_HEADERS:
+            WindowGruop("delete")
+        elif self.last_headers == SPEC_HEADERS:
+            WindowSpec("delete")
+        elif self.last_headers == OTDELENIE_HEADERS:
+            WindowOtdelenie("delete")
+        elif self.last_headers == VID_FINAN_HEADERS:
+            WindowVidFinan("delete")
+        elif self.last_headers == STUDENTS_HEADERS:
+            WindowStudents("delete")
+        elif self.last_headers == PARENTS_HEADERS:
+            WindowParents("delete")
+        else: return
+
+        self.withdraw()
 
     def change(self):
-        pass
+        if self.last_headers == POL_HEADERS:
+            WindowPol("change")
+        elif self.last_headers == KURS_HEADERS:
+            WindowKurs("change")
+        elif self.last_headers == GRUOP_HEADERS:
+            WindowGruop("change")
+        elif self.last_headers == SPEC_HEADERS:
+            WindowSpec("change")
+        elif self.last_headers == OTDELENIE_HEADERS:
+            WindowOtdelenie("change")
+        elif self.last_headers == VID_FINAN_HEADERS:
+            WindowVidFinan("change")
+        elif self.last_headers == STUDENTS_HEADERS:
+            WindowStudents("change")
+        elif self.last_headers == PARENTS_HEADERS:
+            WindowParents("change")
+        else: return
+        
+        self.withdraw()
     
     def show_table(self, sql_query, headers = None):
         # Очистка фрейма перед отображением новых данных
@@ -140,6 +196,7 @@ class MainApp(ctk.CTk):
             table_headers = [description[0] for description in cursor.description]
         else: # иначе используем те что передали
             table_headers = headers
+            self.last_headers = headers
         table_data = cursor.fetchall()
 
         # Закрытие соединения с базой данных
@@ -154,7 +211,9 @@ class MainApp(ctk.CTk):
         canvas.configure(xscrollcommand=x_scrollbar.set)
 
         table = ttk.Treeview(self.table_frame, columns=table_headers, show="headings")
-        for header in table_headers: table.heading(header, text=header)
+        for header in table_headers: 
+            table.heading(header, text=header)
+            table.column(header, width=len(header) * 10 + 15) # установка ширины столбца исходя длины его заголовка
         for row in table_data: table.insert("", "end", values=row)
 
         canvas.create_window((0, 0), window=table, anchor="nw")
@@ -162,5 +221,215 @@ class MainApp(ctk.CTk):
         table.update_idletasks()
         canvas.config(scrollregion=canvas.bbox("all"))
 
+class WindowPol(ctk.CTkToplevel):
+    def __init__(self, operation):
+        super().__init__()
+
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win()) 
+
+        if operation == "add":
+            self.add()
+        elif operation == "delete":
+            self.delete()
+        elif operation == "change":
+            self.change()
+
+    def quit_win(self):
+        win.deiconify()
+        self.destroy()
+    
+    def add(self):
+        print(__class__, "add")
+
+    def delete(self):
+        print(__class__, "delete")
+    
+    def change(self):
+        print(__class__, "change")
+
+class WindowKurs(ctk.CTkToplevel):
+    def __init__(self, operation):
+        super().__init__()
+
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win()) 
+        
+        if operation == "add":
+            self.add()
+        elif operation == "delete":
+            self.delete()
+        elif operation == "change":
+            self.change()
+    
+    def quit_win(self):
+        win.deiconify()
+        self.destroy()
+    
+    def add(self):
+        print(__class__, "add")
+
+    def delete(self):
+        print(__class__, "delete")
+    
+    def change(self):
+        print(__class__, "change")
+
+class WindowGruop(ctk.CTkToplevel):
+    def __init__(self, operation):
+        super().__init__()
+
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win()) 
+
+        if operation == "add":
+            self.add()
+        elif operation == "delete":
+            self.delete()
+        elif operation == "change":
+            self.change()
+    
+    def quit_win(self):
+        win.deiconify()
+        self.destroy()
+    
+    def add(self):
+        print(__class__, "add")
+
+    def delete(self):
+        print(__class__, "delete")
+    
+    def change(self):
+        print(__class__, "change")
+
+class WindowSpec(ctk.CTkToplevel):
+    def __init__(self, operation):
+        super().__init__()
+
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+
+        if operation == "add":
+            self.add()
+        elif operation == "delete":
+            self.delete()
+        elif operation == "change":
+            self.change()
+    
+    def quit_win(self):
+        win.deiconify()
+        self.destroy()
+    
+    def add(self):
+        print(__class__, "add")
+
+    def delete(self):
+        print(__class__, "delete")
+    
+    def change(self):
+        print(__class__, "change")
+
+class WindowOtdelenie(ctk.CTkToplevel):
+    def __init__(self, operation):
+        super().__init__()
+
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+
+        if operation == "add":
+            self.add()
+        elif operation == "delete":
+            self.delete()
+        elif operation == "change":
+            self.change()
+    
+    def quit_win(self):
+        win.deiconify()
+        self.destroy()
+    
+    def add(self):
+        print(__class__, "add")
+
+    def delete(self):
+        print(__class__, "delete")
+    
+    def change(self):
+        print(__class__, "change")
+
+class WindowVidFinan(ctk.CTkToplevel):
+    def __init__(self, operation):
+        super().__init__()
+
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+
+        if operation == "add":
+            self.add()
+        elif operation == "delete":
+            self.delete()
+        elif operation == "change":
+            self.change()
+    
+    def quit_win(self):
+        win.deiconify()
+        self.destroy()
+    
+    def add(self):
+        print(__class__, "add")
+
+    def delete(self):
+        print(__class__, "delete")
+    
+    def change(self):
+        print(__class__, "change")
+
+class WindowStudents(ctk.CTkToplevel):
+    def __init__(self, operation):
+        super().__init__()
+
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+
+        if operation == "add":
+            self.add()
+        elif operation == "delete":
+            self.delete()
+        elif operation == "change":
+            self.change()
+    
+    def quit_win(self):
+        win.deiconify()
+        self.destroy()
+    
+    def add(self):
+        print(__class__, "add")
+
+    def delete(self):
+        print(__class__, "delete")
+    
+    def change(self):
+        print(__class__, "change")
+
+class WindowParents(ctk.CTkToplevel):
+    def __init__(self, operation):
+        super().__init__()
+
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+
+        if operation == "add":
+            self.add()
+        elif operation == "delete":
+            self.delete()
+        elif operation == "change":
+            self.change()
+    
+    def quit_win(self):
+        win.deiconify()
+        self.destroy()
+    
+    def add(self):
+        print(__class__, "add")
+
+    def delete(self):
+        print(__class__, "delete")
+    
+    def change(self):
+        print(__class__, "change")
+
 if __name__ == "__main__":
-    MainApp().mainloop()
+    db = DB()
+    win = WindowMain()
+    win.mainloop()
