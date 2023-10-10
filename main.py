@@ -50,7 +50,7 @@ class WindowMain(ctk.CTk):
                                     command=lambda: self.show_table("SELECT * FROM pol", POL_HEADERS))
         references_menu.add_command(label="Kypc", 
                                     command=lambda: self.show_table("SELECT * FROM kurs", KURS_HEADERS))
-        references_menu.add_command(label="Группа", 
+        references_menu.add_command(label="Группы", 
                                     command=lambda: self.show_table("SELECT * FROM gruop", GRUOP_HEADERS))
         references_menu.add_command(label="Специальность", 
                                     command=lambda: self.show_table("SELECT * FROM spec", SPEC_HEADERS))
@@ -120,17 +120,17 @@ class WindowMain(ctk.CTk):
     
     def add(self):
         if self.last_headers == POL_HEADERS:
-            WindowPol("add")
+            WindowDirectory("add", ("Пол", "pol", "id_pol", "name_pol"))
         elif self.last_headers == KURS_HEADERS:
-            WindowKurs("add")
+            WindowDirectory("add", ("Kypc", "kurs", "id_kurs", "N_kurs"))
         elif self.last_headers == GRUOP_HEADERS:
-            WindowGruop("add")
+            WindowDirectory("add", ("Группы", "gruop", "id_gruop", "name_gruop"))
         elif self.last_headers == SPEC_HEADERS:
-            WindowSpec("add")
+            WindowDirectory("add", ("Специальность", "spec", "id_spec", "name_spec"))
         elif self.last_headers == OTDELENIE_HEADERS:
-            WindowOtdelenie("add")
+            WindowDirectory("add", ("Отделение", "otdelenie", "id_otdelenie", "name_otdelenie"))
         elif self.last_headers == VID_FINAN_HEADERS:
-            WindowVidFinan("add")
+            WindowDirectory("add", ("Вид финансирования", "vid_finan", "id_finan", "name_finan"))
         elif self.last_headers == STUDENTS_HEADERS:
             WindowStudents("add")
         elif self.last_headers == PARENTS_HEADERS:
@@ -148,17 +148,17 @@ class WindowMain(ctk.CTk):
             return
 
         if self.last_headers == POL_HEADERS:
-            WindowPol("delete", item_data)
+            WindowDirectory("delete", ("Пол", "pol", "id_pol", "name_pol"), item_data)
         elif self.last_headers == KURS_HEADERS:
-            WindowKurs("delete", item_data)
+            WindowDirectory("delete", ("Kypc", "kurs", "id_kurs", "N_kurs"), item_data)
         elif self.last_headers == GRUOP_HEADERS:
-            WindowGruop("delete", item_data)
+            WindowDirectory("delete", ("Группы", "gruop", "id_gruop", "name_gruop"), item_data)
         elif self.last_headers == SPEC_HEADERS:
-            WindowSpec("delete", item_data)
+             WindowDirectory("delete", ("Специальность", "spec", "id_spec", "name_spec"), item_data)
         elif self.last_headers == OTDELENIE_HEADERS:
-            WindowOtdelenie("delete", item_data)
+             WindowDirectory("delete", ("Отделение", "otdelenie", "id_otdelenie", "name_otdelenie"), item_data)
         elif self.last_headers == VID_FINAN_HEADERS:
-            WindowVidFinan("delete", item_data)
+             WindowDirectory("delete", ("Вид финансирования", "vid_finan", "id_finan", "name_finan"), item_data)
         elif self.last_headers == STUDENTS_HEADERS:
             WindowStudents("delete", item_data)
         elif self.last_headers == PARENTS_HEADERS:
@@ -176,17 +176,17 @@ class WindowMain(ctk.CTk):
             return
 
         if self.last_headers == POL_HEADERS:
-            WindowPol("change", item_data)
+            WindowDirectory("change", ("Пол", "pol", "id_pol", "name_pol"), item_data)
         elif self.last_headers == KURS_HEADERS:
-            WindowKurs("change", item_data)
+            WindowDirectory("change", ("Kypc", "kurs", "id_kurs", "N_kurs"), item_data)
         elif self.last_headers == GRUOP_HEADERS:
-            WindowGruop("change", item_data)
+            WindowDirectory("change", ("Группы", "gruop", "id_gruop", "name_gruop"), item_data)
         elif self.last_headers == SPEC_HEADERS:
-            WindowSpec("change", item_data)
+            WindowDirectory("change", ("Специальность", "spec", "id_spec", "name_spec"), item_data)
         elif self.last_headers == OTDELENIE_HEADERS:
-            WindowOtdelenie("change", item_data)
+            WindowDirectory("change", ("Отделение", "otdelenie", "id_otdelenie", "name_otdelenie"), item_data)
         elif self.last_headers == VID_FINAN_HEADERS:
-            WindowVidFinan("change", item_data)
+            WindowDirectory("change", ("Вид финансирования", "vid_finan", "id_finan", "name_finan"), item_data)
         elif self.last_headers == STUDENTS_HEADERS:
             WindowStudents("change", item_data)
         elif self.last_headers == PARENTS_HEADERS:
@@ -240,40 +240,47 @@ class WindowMain(ctk.CTk):
     def update_table(self):
         self.show_table(self.last_sql_query, self.last_headers)
 
-class WindowPol(ctk.CTkToplevel):
-    def __init__(self, operation, data = None):
+class WindowDirectory(ctk.CTkToplevel):
+    def __init__(self, operation: str, table_info: tuple[str, str, str, str], data = None):
         super().__init__()
 
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
-        self.data = data
+        if data:
+            self.id = data[0] # id в таблице спрвочнике
+            self.value = data[1] # значение по id
+        
+        self.table_name_user = table_info[0]
+        self.table_name_db = table_info[1]
+        self.field_id = table_info[2]
+        self.field_name = table_info[3]
 
         if operation == "add":
-            self.title("Добавление записи")
-            ctk.CTkLabel(self, text="Наименование пола: ").grid(row=0, column=0, pady=5, padx=5)
+            self.title(f"Добавление записи в таблицу '{self.table_name_user}'")
+            ctk.CTkLabel(self, text="Наименование: ").grid(row=0, column=0, pady=5, padx=5)
             self.add_enty = ctk.CTkEntry(self, width=200)
             self.add_enty.grid(row=0, column=1, pady=5, padx=5)
             ctk.CTkButton(self, text="Добавить", command=self.add).grid(row=1, column=0, pady=5, padx=5)
             ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=1, column=1, pady=5, padx=5)
         
-        elif operation == "delete" and self.data != None:
-            self.title("Удаление записи")
+        elif operation == "delete":
+            self.title(f"Удаление записи из таблицы '{self.table_name_user}'")
             ctk.CTkLabel(self, text="Вы действиельно хотите удалить запись", width=125).grid(row=0, column=0, 
                                                                                              columnspan=2, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"Значение: {self.data[1]}", width=125).grid(row=1, column=0, 
+            ctk.CTkLabel(self, text=f"Значение: {self.value}", width=125).grid(row=1, column=0, 
                                                                                  columnspan=2, pady=5, padx=5)
             ctk.CTkButton(self, text="Да", command=self.delete, width=125).grid(row=2, column=0, pady=5, padx=5)
             ctk.CTkButton(self, text="Нет", command=self.quit_win, width=125).grid(row=2, column=1, pady=5, padx=5)
             
-        elif operation == "change"and self.data != None:
-            self.title("Изменение записи")
+        elif operation == "change":
+            self.title(f"Изменение записи в таблице '{self.table_name_user}'")
             ctk.CTkLabel(self, text="Наименование значения").grid(row=0, column=0, pady=5, padx=5)
             ctk.CTkLabel(self, text="текущее значение").grid(row=0, column=1, pady=5, padx=5)
             ctk.CTkLabel(self, text="Новое значение").grid(row=0, column=2, pady=5, padx=5)
 
-            ctk.CTkLabel(self, text="Наименование пола").grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"{self.data[1]}").grid(row=2, column=1, pady=5, padx=5)
-            self.pol_entry = ctk.CTkEntry(self, width=200)
-            self.pol_entry.grid(row=2, column=2, pady=5, padx=5)
+            ctk.CTkLabel(self, text="Наименование").grid(row=2, column=0, pady=5, padx=5)
+            ctk.CTkLabel(self, text=f"{self.value}").grid(row=2, column=1, pady=5, padx=5)
+            self.change_entry = ctk.CTkEntry(self, width=200)
+            self.change_entry.grid(row=2, column=2, pady=5, padx=5)
 
             ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=3, column=0, pady=5, padx=5)
             ctk.CTkButton(self, text="Сохранить", command=self.change).grid(row=3, column=2, pady=5, padx=5)
@@ -284,12 +291,12 @@ class WindowPol(ctk.CTkToplevel):
         self.destroy()
     
     def add(self):
-        new_pol = self.add_enty.get()
-        if new_pol:
+        new_value = self.add_enty.get()
+        if new_value:
             try:
                 conn = sqlite3.connect("res\\students_bd.db")
                 cursor = conn.cursor()
-                cursor.execute("INSERT INTO pol (name_pol) VALUES (?)", (new_pol,))
+                cursor.execute(f"INSERT INTO {self.table_name_db} ({self.field_name}) VALUES (?)", (new_value,))
                 conn.commit()
                 conn.close()
                 self.quit_win()
@@ -298,437 +305,26 @@ class WindowPol(ctk.CTkToplevel):
 
     def delete(self):
         try:
-            if self.data != None:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM pol WHERE id_pol = ?", (self.data[0],))
-                conn.commit()
-                conn.close()
-                self.quit_win()
+            conn = sqlite3.connect("res\\students_bd.db")
+            cursor = conn.cursor()
+            cursor.execute(f"DELETE FROM {self.table_name_db} WHERE {self.field_id} = ?", (self.id,))
+            conn.commit()
+            conn.close()
+            self.quit_win()
         except sqlite3.Error as e:
             showerror(title="Ошибка", message=str(e))
     
     def change(self):
-        new_pol = self.pol_entry.get()
-        if new_pol:
-            try:
-                if self.data != None:
-                    conn = sqlite3.connect("res\\students_bd.db")
-                    cursor = conn.cursor()
-                    cursor.execute("UPDATE pol SET name_pol = ? WHERE id_pol = ?", (new_pol, self.data[0]))
-                    conn.commit()
-                    conn.close()
-                    self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-class WindowKurs(ctk.CTkToplevel):
-    def __init__(self, operation, data = None):
-        super().__init__()
-
-        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
-        self.data = data
-
-        if operation == "add":
-            self.title("Добавление записи")
-            ctk.CTkLabel(self, text="Наименование курса: ").grid(row=0, column=0, pady=5, padx=5)
-            self.add_enty = ctk.CTkEntry(self, width=200)
-            self.add_enty.grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkButton(self, text="Добавить", command=self.add).grid(row=1, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=1, column=1, pady=5, padx=5)
-        
-        elif operation == "delete" and self.data != None:
-            self.title("Удаление записи")
-            ctk.CTkLabel(self, text="Вы действиельно хотите удалить запись", width=125).grid(row=0, column=0, 
-                                                                                             columnspan=2, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"Значение: {self.data[1]}", width=125).grid(row=1, column=0, 
-                                                                                 columnspan=2, pady=5, padx=5)
-            ctk.CTkButton(self, text="Да", command=self.delete, width=125).grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Нет", command=self.quit_win, width=125).grid(row=2, column=1, pady=5, padx=5)
-            
-        elif operation == "change"and self.data != None:
-            self.title("Изменение записи")
-            ctk.CTkLabel(self, text="Наименование значения").grid(row=0, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text="текущее значение").grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkLabel(self, text="Новое значение").grid(row=0, column=2, pady=5, padx=5)
-
-            ctk.CTkLabel(self, text="Наименование курса").grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"{self.data[1]}").grid(row=2, column=1, pady=5, padx=5)
-            self.kurs_entry = ctk.CTkEntry(self, width=200)
-            self.kurs_entry.grid(row=2, column=2, pady=5, padx=5)
-
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=3, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Сохранить", command=self.change).grid(row=3, column=2, pady=5, padx=5)
-    
-    def quit_win(self):
-        win.deiconify()
-        win.update_table()
-        self.destroy()
-    
-    def add(self):
-        new_kurs = self.add_enty.get()
-        if new_kurs:
+        new_value = self.change_entry.get()
+        if new_value:
             try:
                 conn = sqlite3.connect("res\\students_bd.db")
                 cursor = conn.cursor()
-                cursor.execute("INSERT INTO kurs (N_kurs) VALUES (?)", (new_kurs,))
+                cursor.execute(f"UPDATE {self.table_name_db} SET {self.field_name} = ? WHERE {self.field_id} = ?", 
+                               (new_value, self.id))
                 conn.commit()
                 conn.close()
                 self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-    def delete(self):
-        try:
-            if self.data != None:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM kurs WHERE id_kurs = ?", (self.data[0],))
-                conn.commit()
-                conn.close()
-                self.quit_win()
-        except sqlite3.Error as e:
-            showerror(title="Ошибка", message=str(e))
-    
-    def change(self):
-        new_kurs = self.kurs_entry.get()
-        if new_kurs:
-            try:
-                if self.data != None:
-                    conn = sqlite3.connect("res\\students_bd.db")
-                    cursor = conn.cursor()
-                    cursor.execute("UPDATE kurs SET N_kurs = ? WHERE id_kurs = ?", (new_kurs, self.data[0]))
-                    conn.commit()
-                    conn.close()
-                    self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-class WindowGruop(ctk.CTkToplevel):
-    def __init__(self, operation, data = None):
-        super().__init__()
-
-        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
-        self.data = data
-
-        if operation == "add":
-            self.title("Добавление записи")
-            ctk.CTkLabel(self, text="Наименование группы: ").grid(row=0, column=0, pady=5, padx=5)
-            self.add_enty = ctk.CTkEntry(self, width=200)
-            self.add_enty.grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkButton(self, text="Добавить", command=self.add).grid(row=1, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=1, column=1, pady=5, padx=5)
-        
-        elif operation == "delete" and self.data != None:
-            self.title("Удаление записи")
-            ctk.CTkLabel(self, text="Вы действиельно хотите удалить запись", width=125).grid(row=0, column=0, 
-                                                                                             columnspan=2, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"Значение: {self.data[1]}", width=125).grid(row=1, column=0, 
-                                                                                 columnspan=2, pady=5, padx=5)
-            ctk.CTkButton(self, text="Да", command=self.delete, width=125).grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Нет", command=self.quit_win, width=125).grid(row=2, column=1, pady=5, padx=5)
-            
-        elif operation == "change"and self.data != None:
-            self.title("Изменение записи")
-            ctk.CTkLabel(self, text="Наименование значения").grid(row=0, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text="текущее значение").grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkLabel(self, text="Новое значение").grid(row=0, column=2, pady=5, padx=5)
-
-            ctk.CTkLabel(self, text="Наименование группы").grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"{self.data[1]}").grid(row=2, column=1, pady=5, padx=5)
-            self.gruop_entry = ctk.CTkEntry(self, width=200)
-            self.gruop_entry.grid(row=2, column=2, pady=5, padx=5)
-
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=3, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Сохранить", command=self.change).grid(row=3, column=2, pady=5, padx=5)
-    
-    def quit_win(self):
-        win.deiconify()
-        win.update_table()
-        self.destroy()
-    
-    def add(self):
-        new_gruop = self.add_enty.get()
-        if new_gruop:
-            try:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO gruop (name_gruop) VALUES (?)", (new_gruop,))
-                conn.commit()
-                conn.close()
-                self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-    def delete(self):
-        try:
-            if self.data != None:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM gruop WHERE id_gruop = ?", (self.data[0],))
-                conn.commit()
-                conn.close()
-                self.quit_win()
-        except sqlite3.Error as e:
-            showerror(title="Ошибка", message=str(e))
-    
-    def change(self):
-        new_kurs = self.gruop_entry.get()
-        if new_kurs:
-            try:
-                if self.data != None:
-                    conn = sqlite3.connect("res\\students_bd.db")
-                    cursor = conn.cursor()
-                    cursor.execute("UPDATE gruop SET name_gruop = ? WHERE id_gruop = ?", (new_kurs, self.data[0]))
-                    conn.commit()
-                    conn.close()
-                    self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-class WindowSpec(ctk.CTkToplevel):
-    def __init__(self, operation, data = None):
-        super().__init__()
-
-        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
-        self.data = data
-
-        if operation == "add":
-            self.title("Добавление записи")
-            ctk.CTkLabel(self, text="Наименование специальности: ").grid(row=0, column=0, pady=5, padx=5)
-            self.add_enty = ctk.CTkEntry(self, width=200)
-            self.add_enty.grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkButton(self, text="Добавить", command=self.add).grid(row=1, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=1, column=1, pady=5, padx=5)
-        
-        elif operation == "delete" and self.data != None:
-            self.title("Удаление записи")
-            ctk.CTkLabel(self, text="Вы действиельно хотите удалить запись", width=125).grid(row=0, column=0, 
-                                                                                             columnspan=2, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"Значение: {self.data[1]}", width=125).grid(row=1, column=0, 
-                                                                                 columnspan=2, pady=5, padx=5)
-            ctk.CTkButton(self, text="Да", command=self.delete, width=125).grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Нет", command=self.quit_win, width=125).grid(row=2, column=1, pady=5, padx=5)
-            
-        elif operation == "change"and self.data != None:
-            self.title("Изменение записи")
-            ctk.CTkLabel(self, text="Наименование значения").grid(row=0, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text="текущее значение").grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkLabel(self, text="Новое значение").grid(row=0, column=2, pady=5, padx=5)
-
-            ctk.CTkLabel(self, text="Наименование специальности").grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"{self.data[1]}").grid(row=2, column=1, pady=5, padx=5)
-            self.spec_entry = ctk.CTkEntry(self, width=200)
-            self.spec_entry.grid(row=2, column=2, pady=5, padx=5)
-
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=3, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Сохранить", command=self.change).grid(row=3, column=2, pady=5, padx=5)
-    
-    def quit_win(self):
-        win.deiconify()
-        win.update_table()
-        self.destroy()
-    
-    def add(self):
-        new_spec = self.add_enty.get()
-        if new_spec:
-            try:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO spec (name_spec) VALUES (?)", (new_spec,))
-                conn.commit()
-                conn.close()
-                self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-    def delete(self):
-        try:
-            if self.data != None:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM spec WHERE id_spec = ?", (self.data[0],))
-                conn.commit()
-                conn.close()
-                self.quit_win()
-        except sqlite3.Error as e:
-            showerror(title="Ошибка", message=str(e))
-    
-    def change(self):
-        new_kurs = self.spec_entry.get()
-        if new_kurs:
-            try:
-                if self.data != None:
-                    conn = sqlite3.connect("res\\students_bd.db")
-                    cursor = conn.cursor()
-                    cursor.execute("UPDATE spec SET name_spec = ? WHERE id_spec = ?", (new_kurs, self.data[0]))
-                    conn.commit()
-                    conn.close()
-                    self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-class WindowOtdelenie(ctk.CTkToplevel):
-    def __init__(self, operation, data = None):
-        super().__init__()
-
-        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
-        self.data = data
-
-        if operation == "add":
-            self.title("Добавление записи")
-            ctk.CTkLabel(self, text="Наименование отделения: ").grid(row=0, column=0, pady=5, padx=5)
-            self.add_enty = ctk.CTkEntry(self, width=200)
-            self.add_enty.grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkButton(self, text="Добавить", command=self.add).grid(row=1, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=1, column=1, pady=5, padx=5)
-        
-        elif operation == "delete" and self.data != None:
-            self.title("Удаление записи")
-            ctk.CTkLabel(self, text="Вы действиельно хотите удалить запись", width=125).grid(row=0, column=0, 
-                                                                                             columnspan=2, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"Значение: {self.data[1]}", width=125).grid(row=1, column=0, 
-                                                                                 columnspan=2, pady=5, padx=5)
-            ctk.CTkButton(self, text="Да", command=self.delete, width=125).grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Нет", command=self.quit_win, width=125).grid(row=2, column=1, pady=5, padx=5)
-            
-        elif operation == "change"and self.data != None:
-            self.title("Изменение записи")
-            ctk.CTkLabel(self, text="Наименование значения").grid(row=0, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text="текущее значение").grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkLabel(self, text="Новое значение").grid(row=0, column=2, pady=5, padx=5)
-
-            ctk.CTkLabel(self, text="Наименование отделения").grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"{self.data[1]}").grid(row=2, column=1, pady=5, padx=5)
-            self.otdelenie_entry = ctk.CTkEntry(self, width=200)
-            self.otdelenie_entry.grid(row=2, column=2, pady=5, padx=5)
-
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=3, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Сохранить", command=self.change).grid(row=3, column=2, pady=5, padx=5)
-    
-    def quit_win(self):
-        win.deiconify()
-        win.update_table()
-        self.destroy()
-    
-    def add(self):
-        new_otdelenie = self.add_enty.get()
-        if new_otdelenie:
-            try:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO otdelenie (name_otdelenie) VALUES (?)", (new_otdelenie,))
-                conn.commit()
-                conn.close()
-                self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-    def delete(self):
-        try:
-            if self.data != None:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM otdelenie WHERE id_otdelenie = ?", (self.data[0],))
-                conn.commit()
-                conn.close()
-                self.quit_win()
-        except sqlite3.Error as e:
-            showerror(title="Ошибка", message=str(e))
-    
-    def change(self):
-        new_kurs = self.otdelenie_entry.get()
-        if new_kurs:
-            try:
-                if self.data != None:
-                    conn = sqlite3.connect("res\\students_bd.db")
-                    cursor = conn.cursor()
-                    cursor.execute("UPDATE otdelenie SET name_otdelenie = ? WHERE id_otdelenie = ?", (new_kurs, self.data[0]))
-                    conn.commit()
-                    conn.close()
-                    self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-class WindowVidFinan(ctk.CTkToplevel):
-    def __init__(self, operation, data = None):
-        super().__init__()
-
-        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
-        self.data = data
-
-        if operation == "add":
-            self.title("Добавление записи")
-            ctk.CTkLabel(self, text="Наименование финансирования: ").grid(row=0, column=0, pady=5, padx=5)
-            self.add_enty = ctk.CTkEntry(self, width=200)
-            self.add_enty.grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkButton(self, text="Добавить", command=self.add).grid(row=1, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=1, column=1, pady=5, padx=5)
-        
-        elif operation == "delete" and self.data != None:
-            self.title("Удаление записи")
-            ctk.CTkLabel(self, text="Вы действиельно хотите удалить запись", width=125).grid(row=0, column=0, 
-                                                                                             columnspan=2, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"Значение: {self.data[1]}", width=125).grid(row=1, column=0, 
-                                                                                 columnspan=2, pady=5, padx=5)
-            ctk.CTkButton(self, text="Да", command=self.delete, width=125).grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Нет", command=self.quit_win, width=125).grid(row=2, column=1, pady=5, padx=5)
-            
-        elif operation == "change"and self.data != None:
-            self.title("Изменение записи")
-            ctk.CTkLabel(self, text="Наименование значения").grid(row=0, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text="текущее значение").grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkLabel(self, text="Новое значение").grid(row=0, column=2, pady=5, padx=5)
-
-            ctk.CTkLabel(self, text="Наименование финансирования").grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"{self.data[1]}").grid(row=2, column=1, pady=5, padx=5)
-            self.finan_entry = ctk.CTkEntry(self, width=200)
-            self.finan_entry.grid(row=2, column=2, pady=5, padx=5)
-
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=3, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Сохранить", command=self.change).grid(row=3, column=2, pady=5, padx=5)
-    
-    def quit_win(self):
-        win.deiconify()
-        win.update_table()
-        self.destroy()
-    
-    def add(self):
-        new_vid_finan = self.add_enty.get()
-        if new_vid_finan:
-            try:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO vid_finan (name_finan) VALUES (?)", (new_vid_finan,))
-                conn.commit()
-                conn.close()
-                self.quit_win()
-            except sqlite3.Error as e:
-                showerror(title="Ошибка", message=str(e))
-
-    def delete(self):
-        try:
-            if self.data != None:
-                conn = sqlite3.connect("res\\students_bd.db")
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM vid_finan WHERE id_finan = ?", (self.data[0],))
-                conn.commit()
-                conn.close()
-                self.quit_win()
-        except sqlite3.Error as e:
-            showerror(title="Ошибка", message=str(e))
-    
-    def change(self):
-        new_kurs = self.finan_entry.get()
-        if new_kurs:
-            try:
-                if self.data != None:
-                    conn = sqlite3.connect("res\\students_bd.db")
-                    cursor = conn.cursor()
-                    cursor.execute("UPDATE vid_finan SET name_finan = ? WHERE id_finan = ?", (new_kurs, self.data[0]))
-                    conn.commit()
-                    conn.close()
-                    self.quit_win()
             except sqlite3.Error as e:
                 showerror(title="Ошибка", message=str(e))
 
@@ -737,56 +333,22 @@ class WindowStudents(ctk.CTkToplevel):
         super().__init__()
 
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
-        self.data = data
-
-        if operation == "add":
-            self.add()
-        elif operation == "delete":
-            self.delete()
-        elif operation == "change":
-            self.change()
     
     def quit_win(self):
         win.deiconify()
         win.update_table()
         self.destroy()
-    
-    def add(self):
-        print(__class__, "add")
-
-    def delete(self):
-        print(__class__, "delete")
-    
-    def change(self):
-        print(__class__, "change")
 
 class WindowParents(ctk.CTkToplevel):
     def __init__(self, operation, data = None):
         super().__init__()
 
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
-        self.data = data
-
-        if operation == "add":
-            self.add()
-        elif operation == "delete":
-            self.delete()
-        elif operation == "change":
-            self.change()
     
     def quit_win(self):
         win.deiconify()
         win.update_table()
         self.destroy()
-    
-    def add(self):
-        print(__class__, "add")
-
-    def delete(self):
-        print(__class__, "delete")
-    
-    def change(self):
-        print(__class__, "change")
 
 if __name__ == "__main__":
     db = DB()
