@@ -4,18 +4,19 @@ import customtkinter as ctk
 import sqlite3
 from PIL import Image
 from DB import DB
+from tkinter.messagebox import showerror
 
-POL_HEADERS = ["ID", "Наименование пола"]
-KURS_HEADERS = ["ID", "Наименование курса"]
-GRUOP_HEADERS = ["ID", "Наименование группы"]
-SPEC_HEADERS = ["ID", "Наименование специальности"]
-OTDELENIE_HEADERS = ["ID", "Наименование отделения"]
-VID_FINAN_HEADERS = ["ID", "Наименование финансирования"]
+POL_HEADERS = ["№", "Наименование пола"]
+KURS_HEADERS = ["№", "Наименование курса"]
+GRUOP_HEADERS = ["№", "Наименование группы"]
+SPEC_HEADERS = ["№", "Наименование специальности"]
+OTDELENIE_HEADERS = ["№", "Наименование отделения"]
+VID_FINAN_HEADERS = ["№", "Наименование финансирования"]
 
-STUDENTS_HEADERS = ["ID", "ФИО студента", "Дата рождения", "№ телефона", 
+STUDENTS_HEADERS = ["№", "ФИО студента", "Дата рождения", "№ телефона", 
                     "№ студенчиского билета", "Год поступления", "Год окончания",
                     "Kypc", "Группа", "Отделение", "Пол", "Вид финансирования", "Специальность"]
-PARENTS_HEADERS = ["ID", "ФИО родителя", "№ телефона", "ФИО студента"]
+PARENTS_HEADERS = ["№", "ФИО родителя", "№ телефона", "ФИО студента"]
 
 class WindowMain(ctk.CTk):
     def __init__(self):
@@ -139,43 +140,57 @@ class WindowMain(ctk.CTk):
         self.withdraw()
 
     def delete(self):
+        select_item = self.table.selection()
+        if select_item:
+            item_data = self.table.item(select_item[0])["values"]
+        else:
+            showerror(title="Ошибка", message="He выбранна запись")
+            return
+
         if self.last_headers == POL_HEADERS:
-            WindowPol("delete")
+            WindowPol("delete", item_data)
         elif self.last_headers == KURS_HEADERS:
-            WindowKurs("delete")
+            WindowKurs("delete", item_data)
         elif self.last_headers == GRUOP_HEADERS:
-            WindowGruop("delete")
+            WindowGruop("delete", item_data)
         elif self.last_headers == SPEC_HEADERS:
             WindowSpec("delete")
         elif self.last_headers == OTDELENIE_HEADERS:
-            WindowOtdelenie("delete")
+            WindowOtdelenie("delete", item_data)
         elif self.last_headers == VID_FINAN_HEADERS:
-            WindowVidFinan("delete")
+            WindowVidFinan("delete", item_data)
         elif self.last_headers == STUDENTS_HEADERS:
-            WindowStudents("delete")
+            WindowStudents("delete", item_data)
         elif self.last_headers == PARENTS_HEADERS:
-            WindowParents("delete")
+            WindowParents("delete", item_data)
         else: return
 
         self.withdraw()
 
     def change(self):
+        select_item = self.table.selection()
+        if select_item:
+            item_data = self.table.item(select_item[0])["values"]
+        else:
+            showerror(title="Ошибка", message="He выбранна запись")
+            return
+
         if self.last_headers == POL_HEADERS:
-            WindowPol("change")
+            WindowPol("change", item_data)
         elif self.last_headers == KURS_HEADERS:
-            WindowKurs("change")
+            WindowKurs("change", item_data)
         elif self.last_headers == GRUOP_HEADERS:
-            WindowGruop("change")
+            WindowGruop("change", item_data)
         elif self.last_headers == SPEC_HEADERS:
-            WindowSpec("change")
+            WindowSpec("change", item_data)
         elif self.last_headers == OTDELENIE_HEADERS:
-            WindowOtdelenie("change")
+            WindowOtdelenie("change", item_data)
         elif self.last_headers == VID_FINAN_HEADERS:
-            WindowVidFinan("change")
+            WindowVidFinan("change", item_data)
         elif self.last_headers == STUDENTS_HEADERS:
-            WindowStudents("change")
+            WindowStudents("change", item_data)
         elif self.last_headers == PARENTS_HEADERS:
-            WindowParents("change")
+            WindowParents("change", item_data)
         else: return
         
         self.withdraw()
@@ -190,6 +205,7 @@ class WindowMain(ctk.CTk):
 
         # Выполнение SQL-запроса
         cursor.execute(sql_query)
+        self.last_sql_query = sql_query
 
         # Получение заголовков таблицы и данных
         if headers == None: # если заголовки не были переданы используем те что в БД
@@ -210,48 +226,108 @@ class WindowMain(ctk.CTk):
 
         canvas.configure(xscrollcommand=x_scrollbar.set)
 
-        table = ttk.Treeview(self.table_frame, columns=table_headers, show="headings")
+        self.table = ttk.Treeview(self.table_frame, columns=table_headers, show="headings")
         for header in table_headers: 
-            table.heading(header, text=header)
-            table.column(header, width=len(header) * 10 + 15) # установка ширины столбца исходя длины его заголовка
-        for row in table_data: table.insert("", "end", values=row)
+            self.table.heading(header, text=header)
+            self.table.column(header, width=len(header) * 10 + 15) # установка ширины столбца исходя длины его заголовка
+        for row in table_data: self.table.insert("", "end", values=row)
 
-        canvas.create_window((0, 0), window=table, anchor="nw")
+        canvas.create_window((0, 0), window=self.table, anchor="nw")
 
-        table.update_idletasks()
+        self.table.update_idletasks()
         canvas.config(scrollregion=canvas.bbox("all"))
+    
+    def update_table(self):
+        self.show_table(self.last_sql_query, self.last_headers)
 
 class WindowPol(ctk.CTkToplevel):
-    def __init__(self, operation):
+    def __init__(self, operation, data = None):
         super().__init__()
 
-        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win()) 
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+        self.data = data
 
         if operation == "add":
-            self.add()
-        elif operation == "delete":
-            self.delete()
-        elif operation == "change":
-            self.change()
+            self.title("Добавление записи")
+            ctk.CTkLabel(self, text="Наименование пола: ").grid(row=0, column=0, pady=5, padx=5)
+            self.add_enty = ctk.CTkEntry(self, width=200)
+            self.add_enty.grid(row=0, column=1, pady=5, padx=5)
+            ctk.CTkButton(self, text="Добавить", command=self.add).grid(row=1, column=0, pady=5, padx=5)
+            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=1, column=1, pady=5, padx=5)
+        
+        elif operation == "delete" and self.data != None:
+            self.title("Удаление записи")
+            ctk.CTkLabel(self, text="Вы действиельно хотите удалить запись", width=125).grid(row=0, column=0, 
+                                                                                             columnspan=2, pady=5, padx=5)
+            ctk.CTkLabel(self, text=f"Значение: {self.data[1]}", width=125).grid(row=1, column=0, 
+                                                                                 columnspan=2, pady=5, padx=5)
+            ctk.CTkButton(self, text="Да", command=self.delete, width=125).grid(row=2, column=0, pady=5, padx=5)
+            ctk.CTkButton(self, text="Нет", command=self.quit_win, width=125).grid(row=2, column=1, pady=5, padx=5)
+            
+        elif operation == "change"and self.data != None:
+            self.title("Изменение записи")
+            ctk.CTkLabel(self, text="Наименование значения").grid(row=0, column=0, pady=5, padx=5)
+            ctk.CTkLabel(self, text="текушее значение").grid(row=0, column=1, pady=5, padx=5)
+            ctk.CTkLabel(self, text="Новое значение").grid(row=0, column=2, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Наименование пола").grid(row=2, column=0, pady=5, padx=5)
+            ctk.CTkLabel(self, text=f"{self.data[1]}").grid(row=2, column=1, pady=5, padx=5)
+            self.pol_entry = ctk.CTkEntry(self, width=200)
+            self.pol_entry.grid(row=2, column=2, pady=5, padx=5)
+
+            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=3, column=0, pady=5, padx=5)
+            ctk.CTkButton(self, text="Сохранить", command=self.change).grid(row=3, column=2, pady=5, padx=5)
 
     def quit_win(self):
         win.deiconify()
+        win.update_table()
         self.destroy()
     
     def add(self):
-        print(__class__, "add")
+        new_name = self.add_enty.get()
+        if new_name:
+            try:
+                conn = sqlite3.connect("res\\students_bd.db")
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO pol (name_pol) VALUES (?)", (new_name,))
+                conn.commit()
+                conn.close()
+                self.quit_win()
+            except sqlite3.Error as e:
+                showerror(title="Ошибка", message=str(e))
 
     def delete(self):
-        print(__class__, "delete")
+        try:
+            if self.data != None:
+                conn = sqlite3.connect("res\\students_bd.db")
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM pol WHERE id_pol = ?", (self.data[0],))
+                conn.commit()
+                conn.close()
+                self.quit_win()
+        except sqlite3.Error as e:
+            showerror(title="Ошибка", message=str(e))
     
     def change(self):
-        print(__class__, "change")
+        new_name = self.pol_entry.get()
+        if new_name:
+            try:
+                if self.data != None:
+                    conn = sqlite3.connect("res\\students_bd.db")
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE pol SET name_pol = ? WHERE id_pol = ?", (new_name, self.data[0]))
+                    conn.commit()
+                    conn.close()
+                    self.quit_win()
+            except sqlite3.Error as e:
+                showerror(title="Ошибка", message=str(e))
 
 class WindowKurs(ctk.CTkToplevel):
-    def __init__(self, operation):
+    def __init__(self, operation, data = None):
         super().__init__()
 
-        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win()) 
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+        self.data = data 
         
         if operation == "add":
             self.add()
@@ -274,10 +350,11 @@ class WindowKurs(ctk.CTkToplevel):
         print(__class__, "change")
 
 class WindowGruop(ctk.CTkToplevel):
-    def __init__(self, operation):
+    def __init__(self, operation, data = None):
         super().__init__()
 
-        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win()) 
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+        self.data = data 
 
         if operation == "add":
             self.add()
@@ -300,10 +377,11 @@ class WindowGruop(ctk.CTkToplevel):
         print(__class__, "change")
 
 class WindowSpec(ctk.CTkToplevel):
-    def __init__(self, operation):
+    def __init__(self, operation, data = None):
         super().__init__()
 
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+        self.data = data
 
         if operation == "add":
             self.add()
@@ -326,10 +404,11 @@ class WindowSpec(ctk.CTkToplevel):
         print(__class__, "change")
 
 class WindowOtdelenie(ctk.CTkToplevel):
-    def __init__(self, operation):
+    def __init__(self, operation, data = None):
         super().__init__()
 
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+        self.data = data
 
         if operation == "add":
             self.add()
@@ -352,10 +431,11 @@ class WindowOtdelenie(ctk.CTkToplevel):
         print(__class__, "change")
 
 class WindowVidFinan(ctk.CTkToplevel):
-    def __init__(self, operation):
+    def __init__(self, operation, data = None):
         super().__init__()
 
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+        self.data = data
 
         if operation == "add":
             self.add()
@@ -378,10 +458,11 @@ class WindowVidFinan(ctk.CTkToplevel):
         print(__class__, "change")
 
 class WindowStudents(ctk.CTkToplevel):
-    def __init__(self, operation):
+    def __init__(self, operation, data = None):
         super().__init__()
 
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+        self.data = data
 
         if operation == "add":
             self.add()
@@ -404,10 +485,11 @@ class WindowStudents(ctk.CTkToplevel):
         print(__class__, "change")
 
 class WindowParents(ctk.CTkToplevel):
-    def __init__(self, operation):
+    def __init__(self, operation, data = None):
         super().__init__()
 
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+        self.data = data
 
         if operation == "add":
             self.add()
