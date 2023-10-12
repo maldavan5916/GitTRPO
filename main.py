@@ -13,18 +13,17 @@ SPEC_HEADERS = ["№", "Наименование специальности"]
 OTDELENIE_HEADERS = ["№", "Наименование отделения"]
 VID_FINAN_HEADERS = ["№", "Наименование финансирования"]
 
-STUDENTS_HEADERS = ["№", "ФИО студента", "Дата рождения", "№ телефона", 
+STUDENTS_HEADERS = ["№", "Фамилия Имя Отчество студента", "Дата рождения", "номер телефона", 
                     "№ студенчиского билета", "Год поступления", "Год окончания",
-                    "Kypc", "Группа", "Отделение", "Пол", "Вид финансирования", "Специальность"]
-PARENTS_HEADERS = ["№", "ФИО родителя", "№ телефона", "ФИО студента"]
+                    "наименование кypca", "Группа", "Наименование отделение", "Пол", "Вид финансирования", "Специальность"]
+PARENTS_HEADERS = ["№", "Фамилия Имя Отчество родителя", "Номер телефона", "Фамилия Имя Отчество студента"]
 
 class WindowMain(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         self.title('Студенческий отдел кадров')
-        self.geometry('865x450')
-        self.resizable(width=False, height=False)
+        self.geometry('865x465')
         self.last_headers = None
 
         # Создание фрейма для отображения таблицы
@@ -115,8 +114,14 @@ class WindowMain(ctk.CTk):
         search_frame.grid(row=1, column=0)
         self.search_entry = ctk.CTkEntry(search_frame, width=300)
         self.search_entry.grid(row=0, column=0, padx=pad)
-        ctk.CTkButton(search_frame, text="Поиск", width=20).grid(row=0, column=1, padx=pad)
-        ctk.CTkButton(search_frame, text="настроить поиск").grid(row=0, column=2, padx=pad)
+        ctk.CTkButton(search_frame, text="Поиск", width=20, command=self.search).grid(row=0, column=1, padx=pad)
+        ctk.CTkButton(search_frame, text="настроить поиск", command=self.customize_search).grid(row=0, column=2, padx=pad)
+    
+    def customize_search(self):
+        pass
+
+    def search(self):
+        pass
     
     def add(self):
         if self.last_headers == POL_HEADERS:
@@ -226,7 +231,7 @@ class WindowMain(ctk.CTk):
 
         canvas.configure(xscrollcommand=x_scrollbar.set)
 
-        self.table = ttk.Treeview(self.table_frame, columns=table_headers, show="headings")
+        self.table = ttk.Treeview(self.table_frame, columns=table_headers, show="headings", height=23)
         for header in table_headers: 
             self.table.heading(header, text=header)
             self.table.column(header, width=len(header) * 10 + 15) # установка ширины столбца исходя длины его заголовка
@@ -259,13 +264,13 @@ class WindowDirectory(ctk.CTkToplevel):
             ctk.CTkLabel(self, text="Наименование: ").grid(row=0, column=0, pady=5, padx=5)
             self.add_enty = ctk.CTkEntry(self, width=200)
             self.add_enty.grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkButton(self, text="Добавить", command=self.add).grid(row=1, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=1, column=1, pady=5, padx=5)
+            ctk.CTkButton(self, text="Отмена", width=200, command=self.quit_win).grid(row=1, column=0, pady=5, padx=5)
+            ctk.CTkButton(self, text="Добавить", width=200, command=self.add).grid(row=1, column=1, pady=5, padx=5)
         
         elif operation == "delete":
             self.title(f"Удаление записи из таблицы '{self.table_name_user}'")
-            ctk.CTkLabel(self, text="Вы действиельно хотите удалить запись", width=125).grid(row=0, column=0, 
-                                                                                             columnspan=2, pady=5, padx=5)
+            ctk.CTkLabel(self, text=f"Вы действиельно хотите удалить запись\nИз таблицы '{self.table_name_user}'?", 
+                         width=125).grid(row=0, column=0, columnspan=2, pady=5, padx=5)
             ctk.CTkLabel(self, text=f"Значение: {self.value}", width=125).grid(row=1, column=0, 
                                                                                  columnspan=2, pady=5, padx=5)
             ctk.CTkButton(self, text="Да", command=self.delete, width=125).grid(row=2, column=0, pady=5, padx=5)
@@ -273,17 +278,15 @@ class WindowDirectory(ctk.CTkToplevel):
             
         elif operation == "change":
             self.title(f"Изменение записи в таблице '{self.table_name_user}'")
-            ctk.CTkLabel(self, text="Наименование значения").grid(row=0, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text="текущее значение").grid(row=0, column=1, pady=5, padx=5)
-            ctk.CTkLabel(self, text="Новое значение").grid(row=0, column=2, pady=5, padx=5)
+            ctk.CTkLabel(self, text="текущее значение").grid(row=0, column=0, pady=5, padx=5)
+            ctk.CTkLabel(self, text="Новое значение").grid(row=0, column=1, pady=5, padx=5)
 
-            ctk.CTkLabel(self, text="Наименование").grid(row=2, column=0, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"{self.value}").grid(row=2, column=1, pady=5, padx=5)
+            ctk.CTkLabel(self, text=f"{self.value}").grid(row=1, column=0, pady=5, padx=5)
             self.change_entry = ctk.CTkEntry(self, width=200)
-            self.change_entry.grid(row=2, column=2, pady=5, padx=5)
+            self.change_entry.grid(row=1, column=1, pady=5, padx=5)
 
-            ctk.CTkButton(self, text="Отмена", command=self.quit_win).grid(row=3, column=0, pady=5, padx=5)
-            ctk.CTkButton(self, text="Сохранить", command=self.change).grid(row=3, column=2, pady=5, padx=5)
+            ctk.CTkButton(self, text="Отмена", width=200, command=self.quit_win).grid(row=2, column=0, pady=5, padx=5)
+            ctk.CTkButton(self, text="Сохранить", width=200, command=self.change).grid(row=2, column=1, pady=5, padx=5)
 
     def quit_win(self):
         win.deiconify()
@@ -302,6 +305,8 @@ class WindowDirectory(ctk.CTkToplevel):
                 self.quit_win()
             except sqlite3.Error as e:
                 showerror(title="Ошибка", message=str(e))
+        else:
+            showerror(title="Ошибка", message="Заполните все поля")
 
     def delete(self):
         try:
@@ -327,28 +332,394 @@ class WindowDirectory(ctk.CTkToplevel):
                 self.quit_win()
             except sqlite3.Error as e:
                 showerror(title="Ошибка", message=str(e))
+        else:
+             showerror(title="Ошибка", message="Заполните все поля")
 
 class WindowStudents(ctk.CTkToplevel):
-    def __init__(self, operation, data = None):
+    def __init__(self, operation, select_row = None):
         super().__init__()
-
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+
+        conn = sqlite3.connect("res\\students_bd.db")
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT * FROM kurs")
+        kurs = []
+        for item in cursor.fetchall():
+            kurs.append(f"{item[0]}. {item[1]}")
+        
+        cursor.execute("SELECT * FROM gruop")
+        gruop = []
+        for item in cursor.fetchall():
+            gruop.append(f"{item[0]}. {item[1]}")
+        
+        cursor.execute("SELECT * FROM otdelenie")
+        otdelenie = []
+        for item in cursor.fetchall():
+            otdelenie.append(f"{item[0]}. {item[1]}")
+        
+        cursor.execute("SELECT * FROM pol")
+        pol = []
+        for item in cursor.fetchall():
+            pol.append(f"{item[0]}. {item[1]}")
+        
+        cursor.execute("SELECT * FROM vid_finan")
+        vid_finan = []
+        for item in cursor.fetchall():
+            vid_finan.append(f"{item[0]}. {item[1]}")
+        
+        cursor.execute("SELECT * FROM spec")
+        spec = []
+        for item in cursor.fetchall():
+            spec.append(f"{item[0]}. {item[1]}")
+        
+        conn.close
+
+        if select_row:
+            self.select_row = select_row
+
+        if operation == "add":
+            self.title("Добавление в таблицу 'Студенты'")
+
+            ctk.CTkLabel(self, text="ФИО").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+            self.fio_entry = ctk.CTkEntry(self, width=300)
+            self.fio_entry.grid(row=0, column=1)
+            
+            ctk.CTkLabel(self, text="Дата рождения").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+            self.date_entry = ctk.CTkEntry(self, width=300)
+            self.date_entry.grid(row=1, column=1)
+            
+            ctk.CTkLabel(self, text="№ телефона").grid(row=2, column=0, padx=5, pady=5, sticky="w")
+            self.phone_entry = ctk.CTkEntry(self, width=300)
+            self.phone_entry.grid(row=2, column=1)
+            
+            ctk.CTkLabel(self, text="№ студенчиского билета").grid(row=3, column=0, padx=5, pady=5, sticky="w")
+            self.n_bilet_entry = ctk.CTkEntry(self, width=300)
+            self.n_bilet_entry.grid(row=3, column=1)
+            
+            ctk.CTkLabel(self, text="Год поступления").grid(row=4, column=0, padx=5, pady=5, sticky="w")
+            self.y_post_entry = ctk.CTkEntry(self, width=300)
+            self.y_post_entry.grid(row=4, column=1)
+            
+            ctk.CTkLabel(self, text="Год окончания").grid(row=5, column=0, padx=5, pady=5, sticky="w")
+            self.y_okon_entry = ctk.CTkEntry(self, width=300)
+            self.y_okon_entry.grid(row=5, column=1)
+            '''=================================================================================='''
+            ctk.CTkLabel(self, text="Kypc").grid(row=6, column=0, padx=5, pady=5, sticky="w")
+            self.kurs_cb = ctk.CTkComboBox(self, width=300, values=kurs)
+            self.kurs_cb.grid(row=6, column=1, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Группа").grid(row=7, column=0, padx=5, pady=5, sticky="w")
+            self.gruop_cb = ctk.CTkComboBox(self, width=300, values=gruop)
+            self.gruop_cb.grid(row=7, column=1, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Отделение").grid(row=8, column=0, padx=5, pady=5, sticky="w")
+            self.otdelenie_cb = ctk.CTkComboBox(self, width=300, values=otdelenie)
+            self.otdelenie_cb.grid(row=8, column=1, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Пол").grid(row=9, column=0, padx=5, pady=5, sticky="w")
+            self.pol_cb = ctk.CTkComboBox(self, width=300, values=pol)
+            self.pol_cb.grid(row=9, column=1, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Вид финансирования").grid(row=10, column=0, padx=5, pady=5, sticky="w")
+            self.vid_finan_cb = ctk.CTkComboBox(self, width=300, values=vid_finan)
+            self.vid_finan_cb.grid(row=10, column=1, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Специальность").grid(row=11, column=0, padx=5, pady=5, sticky="w")
+            self.spec_cb = ctk.CTkComboBox(self, width=300, values=spec)
+            self.spec_cb.grid(row=11, column=1, pady=5, padx=5)
+
+            ctk.CTkButton(self, text="Отмена", command=self.quit_win, width=150
+                          ).grid(row=12, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkButton(self, text="Добавить", command=self.add, width=150
+                          ).grid(row=12, column=1, padx=5, pady=5, sticky="e")
+        
+        elif operation == "delete":
+            self.title("Удаление из таблицы 'Студенты'")
+
+            ctk.CTkLabel(self, text="Вы действитель хотите удалить запись\nИз таблицы студенты?"
+                         ).grid(row=0, column=0, padx=5, pady=5, columnspan=2)
+            ctk.CTkLabel(self, text=f"{self.select_row[0]}. {self.select_row[1]}"
+                         ).grid(row=1, column=0, padx=5, pady=5, columnspan=2)
+            
+            ctk.CTkButton(self, text="Нет", width=100, command=self.quit_win).grid(row=2, column=0, pady=5, padx=5, sticky="w")
+            ctk.CTkButton(self, text="Да", width=100, command=self.delete).grid(row=2, column=1, pady=5, padx=5, sticky="e")
+        
+        elif operation == "change":
+            self.title("Изменение в таблице 'Студенты'")
+
+            ctk.CTkLabel(self, text="Имя поля").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text="Текущее значение").grid(row=0, column=1, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text="Новое занчение").grid(row=0, column=2, padx=5, pady=5, sticky="w")
+
+            ctk.CTkLabel(self, text="ФИО").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[1]).grid(row=1, column=1, padx=5, pady=5, sticky="w")
+            self.fio_entry = ctk.CTkEntry(self, width=300)
+            self.fio_entry.grid(row=1, column=2)
+            
+            ctk.CTkLabel(self, text="Дата рождения").grid(row=2, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[2]).grid(row=2, column=1, padx=5, pady=5, sticky="w")
+            self.date_entry = ctk.CTkEntry(self, width=300)
+            self.date_entry.grid(row=2, column=2)
+            
+            ctk.CTkLabel(self, text="№ телефона").grid(row=3, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[3]).grid(row=3, column=1, padx=5, pady=5, sticky="w")
+            self.phone_entry = ctk.CTkEntry(self, width=300)
+            self.phone_entry.grid(row=3, column=2)
+            
+            ctk.CTkLabel(self, text="№ студенчиского билета").grid(row=4, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[4]).grid(row=4, column=1, padx=5, pady=5, sticky="w")
+            self.n_bilet_entry = ctk.CTkEntry(self, width=300)
+            self.n_bilet_entry.grid(row=4, column=2)
+            
+            ctk.CTkLabel(self, text="Год поступления").grid(row=5, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[5]).grid(row=5, column=1, padx=5, pady=5, sticky="w")
+            self.y_post_entry = ctk.CTkEntry(self, width=300)
+            self.y_post_entry.grid(row=5, column=2)
+            
+            ctk.CTkLabel(self, text="Год окончания").grid(row=6, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[6]).grid(row=6, column=1, padx=5, pady=5, sticky="w")
+            self.y_okon_entry = ctk.CTkEntry(self, width=300)
+            self.y_okon_entry.grid(row=6, column=2)
+            '''=================================================================================='''
+            ctk.CTkLabel(self, text="Kypc").grid(row=7, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[7]).grid(row=7, column=1, padx=5, pady=5, sticky="w")
+            self.kurs_cb = ctk.CTkComboBox(self, width=300, values=kurs)
+            self.kurs_cb.grid(row=7, column=2, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Группа").grid(row=8, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[8]).grid(row=8, column=1, padx=5, pady=5, sticky="w")
+            self.gruop_cb = ctk.CTkComboBox(self, width=300, values=gruop)
+            self.gruop_cb.grid(row=8, column=2, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Отделение").grid(row=9, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[9]).grid(row=9, column=1, padx=5, pady=5, sticky="w")
+            self.otdelenie_cb = ctk.CTkComboBox(self, width=300, values=otdelenie)
+            self.otdelenie_cb.grid(row=9, column=2, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Пол").grid(row=10, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[10]).grid(row=10, column=1, padx=5, pady=5, sticky="w")
+            self.pol_cb = ctk.CTkComboBox(self, width=300, values=pol)
+            self.pol_cb.grid(row=10, column=2, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Вид финансирования").grid(row=11, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[11]).grid(row=11, column=1, padx=5, pady=5, sticky="w")
+            self.vid_finan_cb = ctk.CTkComboBox(self, width=300, values=vid_finan)
+            self.vid_finan_cb.grid(row=11, column=2, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="Специальность").grid(row=12, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkLabel(self, text=self.select_row[12]).grid(row=12, column=1, padx=5, pady=5, sticky="w")
+            self.spec_cb = ctk.CTkComboBox(self, width=300, values=spec)
+            self.spec_cb.grid(row=12, column=2, pady=5, padx=5)
+
+
+            ctk.CTkButton(self, text="Отмена", command=self.quit_win, width=150
+                          ).grid(row=13, column=0, padx=5, pady=5, sticky="w")
+            ctk.CTkButton(self, text="Сохранить", command=self.change, width=150
+                          ).grid(row=13, column=2, padx=5, pady=5, sticky="e")
     
     def quit_win(self):
         win.deiconify()
         win.update_table()
         self.destroy()
+    
+    def add(self):
+        new_FIO = self.fio_entry.get()
+        new_date = self.date_entry.get()
+        new_phone_nomber = self.phone_entry.get()
+        new_n_bilet = self.n_bilet_entry.get()
+        new_y_post = self.y_post_entry.get()
+        new_y_okon = self.y_okon_entry.get()
+        id_kurs = self.kurs_cb.get().split(".")[0]
+        id_gruop = self.gruop_cb.get().split(".")[0]
+        id_otdelenie = self.otdelenie_cb.get().split(".")[0]
+        id_pol = self.pol_cb.get().split(".")[0]
+        id_vid_finan = self.vid_finan_cb.get().split(".")[0]
+        id_spec = self.spec_cb.get().split(".")[0]
+
+        if "" not in (new_FIO, new_date, new_phone_nomber, new_n_bilet, new_y_post, new_y_okon):
+            try:
+                conn = sqlite3.connect("res\\students_bd.db")
+                cursor = conn.cursor()
+                cursor.execute(
+                    f"""INSERT INTO students (FIO, date_dr, phone_nomber, y_post, y_okon, n_bilet,
+                    id_kurs, id_gruop, id_otdelenie, id_pol, id_finan, id_spec) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                    (new_FIO, new_date, new_phone_nomber, new_n_bilet, new_y_post, new_y_okon, 
+                     id_kurs, id_gruop, id_otdelenie, id_pol, id_vid_finan, id_spec))
+                conn.commit()
+                conn.close()
+                self.quit_win()
+            except sqlite3.Error as e:
+                showerror(title="Ошибка", message=str(e))
+        else:
+            showerror(title="Ошибка", message="Заполните все поля")
+    
+    def delete(self):
+        try:
+            conn = sqlite3.connect("res\\students_bd.db")
+            cursor = conn.cursor()
+            cursor.execute(f"DELETE FROM students WHERE id_student = ?", (self.select_row[0],))
+            conn.commit()
+            conn.close()
+            self.quit_win()
+        except sqlite3.Error as e:
+            showerror(title="Ошибка", message=str(e))
+
+    def change(self):
+        new_FIO = self.fio_entry.get() or self.select_row[1]
+        new_date = self.date_entry.get() or self.select_row[2]
+        new_phone_nomber = self.phone_entry.get() or self.select_row[3]
+        new_n_bilet = self.n_bilet_entry.get() or self.select_row[4]
+        new_y_post = self.y_post_entry.get() or self.select_row[5]
+        new_y_okon = self.y_okon_entry.get() or self.select_row[6]
+        id_kurs = self.kurs_cb.get().split(".")[0]
+        id_gruop = self.gruop_cb.get().split(".")[0]
+        id_otdelenie = self.otdelenie_cb.get().split(".")[0]
+        id_pol = self.pol_cb.get().split(".")[0]
+        id_vid_finan = self.vid_finan_cb.get().split(".")[0]
+        id_spec = self.spec_cb.get().split(".")[0]
+
+        try:
+            conn = sqlite3.connect("res\\students_bd.db")
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                UPDATE students SET (FIO, date_dr, phone_nomber, y_post, y_okon, n_bilet,
+                id_kurs, id_gruop, id_otdelenie, id_pol, id_finan, id_spec) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                WHERE id_student = {self.select_row[0]}
+            ''', (new_FIO, new_date, new_phone_nomber, new_n_bilet, new_y_post, new_y_okon, 
+                  id_kurs, id_gruop, id_otdelenie, id_pol, id_vid_finan, id_spec))
+            conn.commit()
+            conn.close()
+            self.quit_win()
+        except sqlite3.Error as e:
+            showerror(title="Ошибка", message=str(e))
 
 class WindowParents(ctk.CTkToplevel):
-    def __init__(self, operation, data = None):
+    def __init__(self, operation, select_row = None):
         super().__init__()
-
         self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
-    
+
+        conn = sqlite3.connect("res\\students_bd.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT students.id_student, students.FIO FROM students")
+        students_id_fio = cursor.fetchall()
+        conn.close
+
+        strs_students_id_fio = []
+        for item in students_id_fio:
+            strs_students_id_fio.append(f"{item[0]}. {item[1]}")
+        students_id_fio = strs_students_id_fio
+
+        if select_row:
+            self.select_id_p = select_row[0]
+            self.select_fio_p = select_row[1]
+            self.select_phone = select_row[2]
+            self.select_fio_s = select_row[3]
+
+        if operation == "add":
+            self.title("Добаление")
+            ctk.CTkLabel(self, text="Добаление в таблицу 'Родители'").grid(row=0, column=0, pady=5, padx=5, columnspan=2)
+            ctk.CTkLabel(self, text="ФИО родителя").grid(row=1, column=0, pady=5, padx=5)
+            self.fio_p = ctk.CTkEntry(self, width=300)
+            self.fio_p.grid(row=1, column=1, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="№ телефона").grid(row=2, column=0, pady=5, padx=5)
+            self.phone = ctk.CTkEntry(self, width=300)
+            self.phone.grid(row=2, column=1, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="ФИО студента").grid(row=3, column=0, pady=5, padx=5)
+            self.fio_s = ctk.CTkComboBox(self, width=300, values=students_id_fio)
+            self.fio_s.grid(row=3, column=1, pady=5, padx=5)
+
+            ctk.CTkButton(self, text="Отмена", width=100, command=self.quit_win).grid(row=4, column=0, pady=5, padx=5)
+            ctk.CTkButton(self, text="Добавить", width=100, command=self.add).grid(row=4, column=1, pady=5, padx=5, sticky="e")
+        
+        elif operation == "delete":
+            self.title("Удаление")
+            ctk.CTkLabel(self, text="Вы действиельно хотите\n удалить запись из таблицы 'Родители'?"
+                         ).grid(row=0, column=0, pady=5, padx=5, columnspan=2)
+            
+            ctk.CTkLabel(self, text=f"{self.select_id_p}. {self.select_fio_p}"
+                         ).grid(row=1, column=0, pady=5, padx=5, columnspan=2)
+
+            ctk.CTkButton(self, text="Нет", width=100, command=self.quit_win).grid(row=2, column=0, pady=5, padx=5, sticky="w")
+            ctk.CTkButton(self, text="Да", width=100, command=self.delete).grid(row=2, column=1, pady=5, padx=5, sticky="e")
+        
+        elif operation == "change":
+            self.title("Изменение в таблице 'Родители'")
+            ctk.CTkLabel(self, text="Назввание поля").grid(row=0, column=0, pady=5, padx=5)
+            ctk.CTkLabel(self, text="Текущее значение").grid(row=0, column=1, pady=5, padx=5)
+            ctk.CTkLabel(self, text="Новое занчение").grid(row=0, column=2, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="ФИО родителя").grid(row=1, column=0, pady=5, padx=5)
+            ctk.CTkLabel(self, text=self.select_fio_p).grid(row=1, column=1, pady=5, padx=5)
+            self.fio_p = ctk.CTkEntry(self, width=300)
+            self.fio_p.grid(row=1, column=2, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="№ телефона").grid(row=2, column=0, pady=5, padx=5)
+            ctk.CTkLabel(self, text=self.select_phone).grid(row=2, column=1, pady=5, padx=5)
+            self.phone = ctk.CTkEntry(self, width=300)
+            self.phone.grid(row=2, column=2, pady=5, padx=5)
+
+            ctk.CTkLabel(self, text="ФИО студента").grid(row=3, column=0, pady=5, padx=5)
+            ctk.CTkLabel(self, text=self.select_fio_s).grid(row=3, column=1, pady=5, padx=5)
+            self.fio_s = ctk.CTkComboBox(self, width=300, values=students_id_fio)
+            self.fio_s.grid(row=3, column=2, pady=5, padx=5)
+
+            ctk.CTkButton(self, text="Отмена", width=100, command=self.quit_win).grid(row=4, column=0, pady=5, padx=5)
+            ctk.CTkButton(self, text="Сохранить", width=100, command=self.change).grid(row=4, column=2, pady=5, padx=5, sticky="e")
+
     def quit_win(self):
         win.deiconify()
         win.update_table()
         self.destroy()
+    
+    def add(self):
+        new_FIO = self.fio_p.get()
+        new_phone_nomber = self.phone.get()
+        id_student = self.fio_s.get().split(".")[0]
+
+        if new_FIO != "" and new_phone_nomber != "":
+            try:
+                conn = sqlite3.connect("res\\students_bd.db")
+                cursor = conn.cursor()
+                cursor.execute(f"INSERT INTO parents (FIO, phone_nomber, id_student) VALUES (?, ?, ?)", 
+                            (new_FIO, new_phone_nomber, id_student))
+                conn.commit()
+                conn.close()
+                self.quit_win()
+            except sqlite3.Error as e:
+                showerror(title="Ошибка", message=str(e))
+        else:
+            showerror(title="Ошибка", message="Заполните все поля")
+
+    def delete(self):
+        try:
+            conn = sqlite3.connect("res\\students_bd.db")
+            cursor = conn.cursor()
+            cursor.execute(f"DELETE FROM parents WHERE id_parent = ?", (self.select_id_p,))
+            conn.commit()
+            conn.close()
+            self.quit_win()
+        except sqlite3.Error as e:
+            showerror(title="Ошибка", message=str(e))
+
+    def change(self):
+        new_FIO = self.fio_p.get() or self.select_fio_p
+        new_phone_nomber = self.phone.get() or self.select_phone
+        id_student = self.fio_s.get().split(".")[0]
+
+        try:
+            conn = sqlite3.connect("res\\students_bd.db")
+            cursor = conn.cursor()
+            cursor.execute(f"""
+                        UPDATE parents SET (FIO, phone_nomber, id_student) = (?, ?, ?) WHERE id_parent = {self.select_id_p}
+                    """, (new_FIO, new_phone_nomber, id_student))
+            conn.commit()
+            conn.close()
+            self.quit_win()
+        except sqlite3.Error as e:
+            showerror(title="Ошибка", message=str(e))
 
 if __name__ == "__main__":
     db = DB()
