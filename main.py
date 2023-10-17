@@ -15,7 +15,7 @@ VID_FINAN_HEADERS = ["№", "Наименование финансировани
 
 STUDENTS_HEADERS = ["№", "Фамилия Имя Отчество студента", "Дата рождения", "номер телефона", 
                     "№ студенчиского билета", "Год поступления", "Год окончания",
-                    "наименование кypca", "Группа", "Наименование отделение", "Пол", "Вид финансирования", "Специальность"]
+                    "наименование кypca", "Группа", "Наименование отделение", "Наименование пола", "Вид финансирования", "Специальность"]
 PARENTS_HEADERS = ["№", "Фамилия Имя Отчество родителя", "Номер телефона", "Фамилия Имя Отчество студента"]
 
 class WindowMain(ctk.CTk):
@@ -115,13 +115,36 @@ class WindowMain(ctk.CTk):
         self.search_entry = ctk.CTkEntry(search_frame, width=300)
         self.search_entry.grid(row=0, column=0, padx=pad)
         ctk.CTkButton(search_frame, text="Поиск", width=20, command=self.search).grid(row=0, column=1, padx=pad)
-        ctk.CTkButton(search_frame, text="настроить поиск", command=self.customize_search).grid(row=0, column=2, padx=pad)
-    
-    def customize_search(self):
-        pass
+        ctk.CTkButton(search_frame, text="Искать далее", width=20, command=self.search_next).grid(row=0, column=2, padx=pad)
+        ctk.CTkButton(search_frame, text="Сброс", width=20, command=self.reset_search).grid(row=0, column=3, padx=pad)
+
+    def search_in_table(self, table, search_terms, start_item=None):
+        table.selection_remove(table.selection())  # Сброс предыдущего выделения
+
+        items = table.get_children('')
+        start_index = items.index(start_item) + 1 if start_item else 0
+
+        for item in items[start_index:]:
+            values = table.item(item, 'values')
+            for term in search_terms:
+                if any(term.lower() in str(value).lower() for value in values):
+                    table.selection_add(item)
+                    table.focus(item)
+                    table.see(item)
+                    return item  # Возвращаем найденный элемент
+
+    def reset_search(self):
+        if self.last_headers:
+            self.table.selection_remove(self.table.selection())
 
     def search(self):
-        pass
+        if self.last_headers:
+            self.current_item = self.search_in_table(self.table, self.search_entry.get().split(','))
+
+    def search_next(self):
+        if self.last_headers:
+            if self.current_item:
+                self.current_item = self.search_in_table(self.table, self.search_entry.get().split(','), start_item=self.current_item)
     
     def add(self):
         if self.last_headers == POL_HEADERS:
@@ -145,11 +168,14 @@ class WindowMain(ctk.CTk):
         self.withdraw()
 
     def delete(self):
-        select_item = self.table.selection()
-        if select_item:
-            item_data = self.table.item(select_item[0])["values"]
+        if self.last_headers:
+            select_item = self.table.selection()
+            if select_item:
+                item_data = self.table.item(select_item[0])["values"]
+            else:
+                showerror(title="Ошибка", message="He выбранна запись")
+                return
         else:
-            showerror(title="Ошибка", message="He выбранна запись")
             return
 
         if self.last_headers == POL_HEADERS:
@@ -173,11 +199,14 @@ class WindowMain(ctk.CTk):
         self.withdraw()
 
     def change(self):
-        select_item = self.table.selection()
-        if select_item:
-            item_data = self.table.item(select_item[0])["values"]
+        if self.last_headers:
+            select_item = self.table.selection()
+            if select_item:
+                item_data = self.table.item(select_item[0])["values"]
+            else:
+                showerror(title="Ошибка", message="He выбранна запись")
+                return
         else:
-            showerror(title="Ошибка", message="He выбранна запись")
             return
 
         if self.last_headers == POL_HEADERS:
