@@ -1,10 +1,11 @@
+import sqlite3, xlsxwriter, sys, os
 import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
-import sqlite3
 from PIL import Image
 from DB import DB
-from tkinter.messagebox import showerror
+import pandas as pd
+from tkinter.messagebox import showerror, showinfo
 
 POL_HEADERS = ["№", "Наименование пола"]
 KURS_HEADERS = ["№", "Наименование курса"]
@@ -81,7 +82,7 @@ class WindowMain(ctk.CTk):
 
         # Меню "Отчёты"
         reports_menu = tk.Menu(self.menu_bar, tearoff=0)
-        reports_menu.add_command(label="Создать Отчёт")
+        reports_menu.add_command(label="Создать Отчёт", command=self.to_xlsx)
         self.menu_bar.add_cascade(label="Отчёты", menu=reports_menu)
 
         # Меню "Сервис"
@@ -136,6 +137,7 @@ class WindowMain(ctk.CTk):
     def reset_search(self):
         if self.last_headers:
             self.table.selection_remove(self.table.selection())
+        self.search_entry.delete(0, 'end')
 
     def search(self):
         if self.last_headers:
@@ -145,6 +147,68 @@ class WindowMain(ctk.CTk):
         if self.last_headers:
             if self.current_item:
                 self.current_item = self.search_in_table(self.table, self.search_entry.get().split(','), start_item=self.current_item)
+    
+    def to_xlsx(self):
+        if self.last_headers == POL_HEADERS:
+            sql_query = "SELECT * FROM pol"
+            table_name = "pol"
+        elif self.last_headers == KURS_HEADERS:
+            sql_query = "SELECT * FROM kurs"
+            table_name = "kurs"
+        elif self.last_headers == GRUOP_HEADERS:
+            sql_query = "SELECT * FROM gruop"
+            table_name = "gruop"
+        elif self.last_headers == SPEC_HEADERS:
+            sql_query = "SELECT * FROM spec"
+            table_name = "spec"
+        elif self.last_headers == OTDELENIE_HEADERS:
+            sql_query = "SELECT * FROM otdelenie"
+            table_name = "otdelenie"
+        elif self.last_headers == VID_FINAN_HEADERS:
+            sql_query = "SELECT * FROM vid_finan"
+            table_name = "vid_finan"
+        elif self.last_headers == STUDENTS_HEADERS:
+            sql_query = '''
+                    SELECT students.id_student, students.FIO, students.date_dr, students.phone_nomber, students.n_bilet,
+                        students.y_post, students.y_okon, kurs.N_kurs, gruop.name_gruop, otdelenie.name_otdelenie, pol.name_pol,
+                        vid_finan.name_finan, spec.name_spec
+                    FROM students
+                    JOIN kurs ON students.id_kurs = kurs.id_kurs
+                    JOIN gruop ON students.id_gruop = gruop.id_gruop
+                    JOIN otdelenie ON students.id_otdelenie = otdelenie.id_otdelenie
+                    JOIN pol ON students.id_pol = pol.id_pol
+                    JOIN vid_finan ON students.id_finan = vid_finan.id_finan
+                    JOIN spec ON students.id_spec = spec.id_spec
+            '''
+            table_name = "students"
+        elif self.last_headers == PARENTS_HEADERS:
+            sql_query = '''
+                    SELECT parents.id_parent, parents.FIO, parents.phone_nomber, students.FIO FROM parents
+                    JOIN students ON parents.id_student = students.id_student
+            '''
+            table_name = "parents"
+        else: return
+
+        dir = sys.path[0] + "\\export"
+        os.makedirs(dir, exist_ok=True)
+        path = dir + f"\\{table_name}.xlsx"
+
+        # Подключение к базе данных SQLite
+        conn = sqlite3.connect("res\\students_bd.db")
+        cursor = conn.cursor()
+        # Получите данные из базы данных
+        cursor.execute(sql_query)
+        data = cursor.fetchall()
+        # Создайте DataFrame из данных
+        df = pd.DataFrame(data, columns=self.last_headers)
+        # Создайте объект writer для записи данных в Excel
+        writer = pd.ExcelWriter(path, engine='xlsxwriter')
+        # Запишите DataFrame в файл Excel
+        df.to_excel(writer, 'Лист 1', index=False)
+        # Сохраните результат
+        writer.close()
+
+        showinfo(title="Успешно", message=f"Данные экспортированы в {path}")
     
     def add(self):
         if self.last_headers == POL_HEADERS:
