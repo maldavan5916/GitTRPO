@@ -22,9 +22,9 @@ PARENTS_HEADERS = ["№", "Фамилия Имя Отчество родител
 class WindowMain(ctk.CTk):
     def __init__(self):
         super().__init__()
-
         self.title('Студенческий отдел кадров')
-        self.geometry('865x465')
+        self.wm_iconbitmap()
+        self.iconphoto(True, tk.PhotoImage(file="res\\images\\icon.png"))
         self.last_headers = None
 
         # Создание фрейма для отображения таблицы
@@ -112,7 +112,7 @@ class WindowMain(ctk.CTk):
         ctk.CTkButton(btn_frame, text="изменить", width=btn_width, command=self.change).pack(pady=pad)
 
         search_frame = ctk.CTkFrame(self)
-        search_frame.grid(row=1, column=0)
+        search_frame.grid(row=1, column=0, pady=pad)
         self.search_entry = ctk.CTkEntry(search_frame, width=300)
         self.search_entry.grid(row=0, column=0, padx=pad)
         ctk.CTkButton(search_frame, text="Поиск", width=20, command=self.search).grid(row=0, column=1, padx=pad)
