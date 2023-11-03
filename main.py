@@ -249,11 +249,11 @@ class WindowMain(ctk.CTk):
         elif self.last_headers == GRUOP_HEADERS:
             WindowDirectory("delete", ("Группы", "gruop", "id_gruop", "name_gruop"), item_data)
         elif self.last_headers == SPEC_HEADERS:
-             WindowDirectory("delete", ("Специальность", "spec", "id_spec", "name_spec"), item_data)
+            WindowDirectory("delete", ("Специальность", "spec", "id_spec", "name_spec"), item_data)
         elif self.last_headers == OTDELENIE_HEADERS:
-             WindowDirectory("delete", ("Отделение", "otdelenie", "id_otdelenie", "name_otdelenie"), item_data)
+            WindowDirectory("delete", ("Отделение", "otdelenie", "id_otdelenie", "name_otdelenie"), item_data)
         elif self.last_headers == VID_FINAN_HEADERS:
-             WindowDirectory("delete", ("Вид финансирования", "vid_finan", "id_finan", "name_finan"), item_data)
+            WindowDirectory("delete", ("Вид финансирования", "vid_finan", "id_finan", "name_finan"), item_data)
         elif self.last_headers == STUDENTS_HEADERS:
             WindowStudents("delete", item_data)
         elif self.last_headers == PARENTS_HEADERS:
