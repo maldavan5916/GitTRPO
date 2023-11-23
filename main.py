@@ -1,4 +1,5 @@
 import sqlite3, xlsxwriter, sys, os
+from typing import Optional, Tuple, Union
 import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
@@ -19,6 +20,8 @@ STUDENTS_HEADERS = ["№", "Фамилия Имя Отчество студен�
                     "наименование кypca", "Группа", "Наименование отделение", "Наименование пола", "Вид финансирования", 
                     "Специальность"]
 PARENTS_HEADERS = ["№", "Фамилия Имя Отчество родителя", "Номер телефона", "Фамилия Имя Отчество студента"]
+
+ctk.set_appearance_mode("Dark")
 
 class WindowMain(ctk.CTk):
     def __init__(self):
@@ -88,8 +91,8 @@ class WindowMain(ctk.CTk):
 
         # Меню "Сервис"
         help_menu = tk.Menu(self.menu_bar, tearoff=0)
-        help_menu.add_command(label="Руководство пользователя")
-        help_menu.add_command(label="O программе")
+        help_menu.add_command(label="Руководство пользователя", command=self.open_help)
+        help_menu.add_command(label="O программе", command=self.info_program)
         self.menu_bar.add_cascade(label="Сервис", menu=help_menu)
 
         # Настройка цветов меню
@@ -119,6 +122,13 @@ class WindowMain(ctk.CTk):
         ctk.CTkButton(search_frame, text="Поиск", width=20, command=self.search).grid(row=0, column=1, padx=pad)
         ctk.CTkButton(search_frame, text="Искать далее", width=20, command=self.search_next).grid(row=0, column=2, padx=pad)
         ctk.CTkButton(search_frame, text="Сброс", width=20, command=self.reset_search).grid(row=0, column=3, padx=pad)
+    
+    def info_program(self):
+        InfoProgram()
+        self.withdraw()
+    
+    def open_help(self):
+        os.system("res\\user_guide.chm")
 
     def search_in_table(self, table, search_terms, start_item=None):
         table.selection_remove(table.selection())  # Сброс предыдущего выделения
@@ -339,6 +349,34 @@ class WindowMain(ctk.CTk):
     def update_table(self):
         self.show_table(self.last_sql_query, self.last_headers)
 
+class InfoProgram(ctk.CTkToplevel):
+    def __init__(self, *args, fg_color: str | Tuple[str, str] | None = None, **kwargs):
+        super().__init__(*args, fg_color=fg_color, **kwargs)
+        self.protocol('WM_DELETE_WINDOW', lambda: self.quit_win())
+        self.title("О программе")
+
+        bg = ctk.CTkImage(Image.open("res\\images\\bg.png"), size=(300, 400))
+        lbl = ctk.CTkLabel(self, image=bg, text=' ')
+        lbl.grid(row=0, column=0, rowspan=2, padx=5, pady=5)
+
+        ctk.CTkLabel(self, width=150, anchor="w", justify=ctk.LEFT, text="""
+            Название программы: ПС«Студенческий отдел кадров»
+            Версия: 1.0.0
+            ФИО разработчика: Грачёв Денис Сергеевич
+            год выпуска: 2023\n
+            Назначение программного средства:
+            Данное программное средство «Студенческий отдел кадров» 
+            разрабатывается с целью автоматизации процесса ведения 
+            отчетности
+        """).grid(row=0, column=1, sticky="n", padx=5, pady=5)
+
+        ctk.CTkButton(self, text="OK", width=100, command=self.quit_win).grid(
+            row=1, column=1, sticky="se", padx=25, pady=25)
+    
+    def quit_win(self):
+        win.deiconify()
+        self.destroy()
+
 class WindowDirectory(ctk.CTkToplevel):
     def __init__(self, operation: str, table_info: tuple[str, str, str, str], data = None):
         super().__init__()
@@ -364,9 +402,8 @@ class WindowDirectory(ctk.CTkToplevel):
         elif operation == "delete":
             self.title(f"Удаление записи из таблицы '{self.table_name_user}'")
             ctk.CTkLabel(self, text=f"Вы действиельно хотите удалить запись\nИз таблицы '{self.table_name_user}'?", 
-                         width=125).grid(row=0, column=0, columnspan=2, pady=5, padx=5)
-            ctk.CTkLabel(self, text=f"Значение: {self.value}", width=125).grid(row=1, column=0, 
-                                                                                 columnspan=2, pady=5, padx=5)
+                        width=125).grid(row=0, column=0, columnspan=2, pady=5, padx=5)
+            ctk.CTkLabel(self, text=f"Значение: {self.value}", width=125).grid(row=1, column=0,columnspan=2, pady=5, padx=5)
             ctk.CTkButton(self, text="Да", command=self.delete, width=125).grid(row=2, column=0, pady=5, padx=5)
             ctk.CTkButton(self, text="Нет", command=self.quit_win, width=125).grid(row=2, column=1, pady=5, padx=5)
             
@@ -420,14 +457,14 @@ class WindowDirectory(ctk.CTkToplevel):
                 conn = sqlite3.connect("res\\students_bd.db")
                 cursor = conn.cursor()
                 cursor.execute(f"UPDATE {self.table_name_db} SET {self.field_name} = ? WHERE {self.field_id} = ?", 
-                               (new_value, self.id))
+                            (new_value, self.id))
                 conn.commit()
                 conn.close()
                 self.quit_win()
             except sqlite3.Error as e:
                 showerror(title="Ошибка", message=str(e))
         else:
-             showerror(title="Ошибка", message="Заполните все поля")
+            showerror(title="Ошибка", message="Заполните все поля")
 
 class WindowStudents(ctk.CTkToplevel):
     def __init__(self, operation, select_row = None):
@@ -524,17 +561,17 @@ class WindowStudents(ctk.CTkToplevel):
             self.spec_cb.grid(row=11, column=1, pady=5, padx=5)
 
             ctk.CTkButton(self, text="Отмена", command=self.quit_win, width=150
-                          ).grid(row=12, column=0, padx=5, pady=5, sticky="w")
+                        ).grid(row=12, column=0, padx=5, pady=5, sticky="w")
             ctk.CTkButton(self, text="Добавить", command=self.add, width=150
-                          ).grid(row=12, column=1, padx=5, pady=5, sticky="e")
+                        ).grid(row=12, column=1, padx=5, pady=5, sticky="e")
         
         elif operation == "delete":
             self.title("Удаление из таблицы 'Студенты'")
 
             ctk.CTkLabel(self, text="Вы действитель хотите удалить запись\nИз таблицы студенты?"
-                         ).grid(row=0, column=0, padx=5, pady=5, columnspan=2)
+                        ).grid(row=0, column=0, padx=5, pady=5, columnspan=2)
             ctk.CTkLabel(self, text=f"{self.select_row[0]}. {self.select_row[1]}"
-                         ).grid(row=1, column=0, padx=5, pady=5, columnspan=2)
+                        ).grid(row=1, column=0, padx=5, pady=5, columnspan=2)
             
             ctk.CTkButton(self, text="Нет", width=100, command=self.quit_win).grid(row=2, column=0, pady=5, padx=5, sticky="w")
             ctk.CTkButton(self, text="Да", width=100, command=self.delete).grid(row=2, column=1, pady=5, padx=5, sticky="e")
@@ -608,9 +645,9 @@ class WindowStudents(ctk.CTkToplevel):
 
 
             ctk.CTkButton(self, text="Отмена", command=self.quit_win, width=150
-                          ).grid(row=13, column=0, padx=5, pady=5, sticky="w")
+                        ).grid(row=13, column=0, padx=5, pady=5, sticky="w")
             ctk.CTkButton(self, text="Сохранить", command=self.change, width=150
-                          ).grid(row=13, column=2, padx=5, pady=5, sticky="e")
+                        ).grid(row=13, column=2, padx=5, pady=5, sticky="e")
     
     def quit_win(self):
         win.deiconify()
@@ -639,7 +676,7 @@ class WindowStudents(ctk.CTkToplevel):
                     f"""INSERT INTO students (FIO, date_dr, phone_nomber, y_post, y_okon, n_bilet,
                     id_kurs, id_gruop, id_otdelenie, id_pol, id_finan, id_spec) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
                     (new_FIO, new_date, new_phone_nomber, new_n_bilet, new_y_post, new_y_okon, 
-                     id_kurs, id_gruop, id_otdelenie, id_pol, id_vid_finan, id_spec))
+                    id_kurs, id_gruop, id_otdelenie, id_pol, id_vid_finan, id_spec))
                 conn.commit()
                 conn.close()
                 self.quit_win()
@@ -681,7 +718,7 @@ class WindowStudents(ctk.CTkToplevel):
                 id_kurs, id_gruop, id_otdelenie, id_pol, id_finan, id_spec) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
                 WHERE id_student = {self.select_row[0]}
             ''', (new_FIO, new_date, new_phone_nomber, new_n_bilet, new_y_post, new_y_okon, 
-                  id_kurs, id_gruop, id_otdelenie, id_pol, id_vid_finan, id_spec))
+                id_kurs, id_gruop, id_otdelenie, id_pol, id_vid_finan, id_spec))
             conn.commit()
             conn.close()
             self.quit_win()
@@ -731,10 +768,10 @@ class WindowParents(ctk.CTkToplevel):
         elif operation == "delete":
             self.title("Удаление")
             ctk.CTkLabel(self, text="Вы действиельно хотите\n удалить запись из таблицы 'Родители'?"
-                         ).grid(row=0, column=0, pady=5, padx=5, columnspan=2)
+                        ).grid(row=0, column=0, pady=5, padx=5, columnspan=2)
             
             ctk.CTkLabel(self, text=f"{self.select_id_p}. {self.select_fio_p}"
-                         ).grid(row=1, column=0, pady=5, padx=5, columnspan=2)
+                        ).grid(row=1, column=0, pady=5, padx=5, columnspan=2)
 
             ctk.CTkButton(self, text="Нет", width=100, command=self.quit_win).grid(row=2, column=0, pady=5, padx=5, sticky="w")
             ctk.CTkButton(self, text="Да", width=100, command=self.delete).grid(row=2, column=1, pady=5, padx=5, sticky="e")
